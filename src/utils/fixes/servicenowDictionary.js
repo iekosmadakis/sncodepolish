@@ -19,6 +19,7 @@ export const GLIDE_RECORD_METHODS = [
   'addOrCondition',
   'addJoinQuery',
   'addDomainQuery',
+  'addFunction',
   'setCategory',
   'setLimit',
   'setEncodedQuery',
@@ -34,6 +35,8 @@ export const GLIDE_RECORD_METHODS = [
   'hasNext',
   'getRowCount',
   'getEncodedQuery',
+  '_next',
+  '_query',
   
   // Field access
   'getValue',
@@ -55,6 +58,8 @@ export const GLIDE_RECORD_METHODS = [
   'isValidRecord',
   'isNewRecord',
   'nil',
+  'getFields',
+  'getElements',
   
   // Record operations
   'insert',
@@ -74,6 +79,7 @@ export const GLIDE_RECORD_METHODS = [
   'setForceUpdate',
   'setNewGuidValue',
   'operation',
+  'setLocation',
   
   // Security
   'canRead',
@@ -135,6 +141,12 @@ export const GLIDE_ELEMENT_METHODS = [
   'getLabel',
   'getTableName',
   'getName',
+  'getTextContent',
+  'canRead',
+  'canWrite',
+  'hasRightsTo',
+  'setError',
+  'setPhoneNumber',
 ];
 
 // =============================================================================
@@ -298,12 +310,15 @@ export const GLIDE_SYSTEM_METHODS = [
   'addErrorMessage',
   'getMessage',
   'flushMessages',
+  'getErrorMessages',
+  'getInfoMessages',
   
   // Properties
   'getProperty',
   'setProperty',
   'getPreference',
   'setPreference',
+  'cacheFlush',
   
   // User
   'getUser',
@@ -313,6 +328,7 @@ export const GLIDE_SYSTEM_METHODS = [
   'getImpersonatingUserName',
   'hasRole',
   'hasRoleInGroup',
+  'hasRoleExactly',
   
   // Session
   'getSession',
@@ -385,6 +401,16 @@ export const GLIDE_SYSTEM_METHODS = [
   'base64Decode',
   'getDisplayColumn',
   'getDisplayName',
+  'getEscapedProperty',
+  'getMaxSchemaNameLength',
+  'getNewAppScopeCompanyPrefix',
+  'getNodeName',
+  'getNodeValue',
+  'getSysTimeZone',
+  'setRedirect',
+  'setReturn',
+  'getXMLText',
+  'getXMLNodeList',
   
   // Scope
   'getCurrentScopeName',
@@ -395,6 +421,9 @@ export const GLIDE_SYSTEM_METHODS = [
   'getTimeZoneName',
   'getUrlOnStack',
   'action',
+  'getStyle',
+  'loadGlobalScripts',
+  'setCurrentApplicationId',
 ];
 
 // =============================================================================
@@ -447,6 +476,8 @@ export const GLIDE_SESSION_METHODS = [
   'setClientData',
   'getUser',
   'getRoles',
+  'isImpersonating',
+  'clearClientData',
 ];
 
 // =============================================================================
@@ -463,6 +494,8 @@ export const GLIDE_AJAX_METHODS = [
   'setProcessor',
   'setErrorCallback',
   'getParameter',  // For Script Include processors
+  'getResponseValue',
+  'newItem',
 ];
 
 // =============================================================================
@@ -477,6 +510,7 @@ export const G_FORM_METHODS = [
   'getIntValue',
   'getBooleanValue',
   'getDecimalValue',
+  'getActionName',
   
   // Field visibility/state
   'setVisible',
@@ -497,6 +531,7 @@ export const G_FORM_METHODS = [
   'removeOption',
   'clearOptions',
   'getOption',
+  'getOptionControl',
   
   // Messages
   'showFieldMsg',
@@ -506,6 +541,7 @@ export const G_FORM_METHODS = [
   'addInfoMessage',
   'addErrorMessage',
   'clearMessages',
+  'hideAllFieldMsgs',
   
   // Labels
   'getLabelOf',
@@ -524,6 +560,8 @@ export const G_FORM_METHODS = [
   // Sections
   'setSectionDisplay',
   'isSectionVisible',
+  'activateTab',
+  'getTabNameForField',
   
   // Other
   'flash',
@@ -544,6 +582,11 @@ export const G_FORM_METHODS = [
   'removeAttribute',
   'addAttribute',
   'setScope',
+  'refreshSlushbucket',
+  'showRelatedLists',
+  'isLiveUpdating',
+  'registerHandler',
+  'removeCurrentPrefix',
 ];
 
 // =============================================================================
@@ -584,6 +627,11 @@ export const REST_MESSAGE_V2_METHODS = [
   'setStringParameterNoEscape',
   'setEccCorrelator',
   'setEccParameter',
+  'setAuthenticationProfile',
+  'setRequestBodyFromAttachment',
+  'setRequestBodyFromStream',
+  'saveResponseBodyAsAttachment',
+  'saveResponseBodyAsStream',
 ];
 
 export const REST_RESPONSE_V2_METHODS = [
@@ -597,6 +645,7 @@ export const REST_RESPONSE_V2_METHODS = [
   'getStatusCode',
   'haveError',
   'waitForResponse',
+  'getAllHeaders',
 ];
 
 export const SOAP_MESSAGE_V2_METHODS = [
@@ -621,6 +670,8 @@ export const GLIDE_SYS_ATTACHMENT_METHODS = [
   'write',
   'writeBase64',
   'writeContentStream',
+  'getAttachments',
+  'getSize',
 ];
 
 // =============================================================================
@@ -655,6 +706,11 @@ export const XML_DOCUMENT_2_METHODS = [
   'selectSingleNode',
   'setCurrentElement',
   'toString',
+  'getText',
+  'getNodes',
+  'getElements',
+  'getNodeAttribute',
+  'isValid',
 ];
 
 // =============================================================================
@@ -672,6 +728,8 @@ export const XML_NODE_METHODS = [
   'hasAttribute',
   'setAttribute',
   'toString',
+  'appendChild',
+  'getOwnerDocument',
 ];
 
 // =============================================================================
@@ -688,6 +746,8 @@ export const GLIDE_EMAIL_OUTBOUND_METHODS = [
   'setFrom',
   'setReplyTo',
   'setSubject',
+  'send',
+  'addAttachment',
 ];
 
 // =============================================================================
@@ -805,6 +865,82 @@ export const SCRIPTED_PROCESSOR_METHODS = [
 ];
 
 // =============================================================================
+// GLIDE DB FUNCTION BUILDER METHODS
+// =============================================================================
+export const GLIDE_DB_FUNCTION_BUILDER_METHODS = [
+  'add',
+  'build',
+  'concat',
+  'constant',
+  'coalesce',
+  'dayofweek',
+  'divide',
+  'field',
+  'length',
+  'lowercase',
+  'multiply',
+  'position',
+  'subtract',
+  'substring',
+  'uppercase',
+];
+
+// =============================================================================
+// SERVICE PORTAL ($sp) METHODS
+// =============================================================================
+export const SP_METHODS = [
+  'canReadRecord',
+  'canSeePage',
+  'getCatalogItem',
+  'getDisplayValue',
+  'getField',
+  'getFields',
+  'getFieldsObject',
+  'getForm',
+  'getKBCategoryArticles',
+  'getKBCount',
+  'getKBRecord',
+  'getKBSiblingCategories',
+  'getKBTopCategoryID',
+  'getListColumns',
+  'getMenuHREF',
+  'getMenuItems',
+  'getParameter',
+  'getPortalRecord',
+  'getRecord',
+  'getRecordDisplayValues',
+  'getRecordElements',
+  'getRecordValues',
+  'getRelatedList',
+  'getSCRecord',
+  'getStream',
+  'getValues',
+  'getWidget',
+  'getWidgetFromInstance',
+  'getWidgetParameters',
+  'getWidgetScope',
+  'logStat',
+  'mapRecordToUIAction',
+  'showCatalogPrices',
+  'translateTemplate',
+];
+
+// =============================================================================
+// FLOW DESIGNER (sn_fd.FlowAPI) METHODS
+// =============================================================================
+export const FLOW_API_METHODS = [
+  'cancel',
+  'executeAction',
+  'executeFlow',
+  'executeSubflow',
+  'getRunner',
+  'hasAction',
+  'hasFlow',
+  'hasSubflow',
+  'startAsync',
+];
+
+// =============================================================================
 // CLASS NAMES
 // =============================================================================
 export const CLASS_NAMES = [
@@ -814,6 +950,7 @@ export const CLASS_NAMES = [
   'GlideAggregate',
   'GlideElement',
   'GlideQueryCondition',
+  'GlideElementDescriptor',
   
   // Date/Time
   'GlideDateTime',
@@ -840,6 +977,7 @@ export const CLASS_NAMES = [
   
   // XML
   'XMLDocument2',
+  'XMLDocument',
   'XMLNode',
   'XMLNodeIterator',
   
@@ -853,11 +991,15 @@ export const CLASS_NAMES = [
   'GlideFilter',
   'GlideTableHierarchy',
   'GlideScopedEvaluator',
+  'JSUtil',
+  'TableUtils',
+  'J2js',
   
   // Security
   'GlideSecureRandom',
   'GlideDigest',
   'GlideEncrypter',
+  'GlideCertificateEncryption',
   
   // Plugin
   'GlidePluginManager',
@@ -868,11 +1010,29 @@ export const CLASS_NAMES = [
   // Workflow
   'Workflow',
   
+  // Flow Designer
+  'FlowAPI',
+  'sn_fd',
+  
   // Other
   'TemplatePrinter',
   'GlideLocale',
   'JSON',
   'AbstractAjaxProcessor',
+  'GlideEvaluator',
+  'GlideUpdateManager',
+  'GlideUpdateSet',
+  'GlideImpersonate',
+  'GlideAppLoader',
+  'GlideChoice',
+  'GlideOAuthClient',
+  'GlideOAuthClientRequest',
+  'GlideOAuthClientResponse',
+  'GlideScriptedProcessor',
+  'GlideServletRequest',
+  'GlideServletResponse',
+  'GlideSPScriptable',
+  'SNC',
 ];
 
 // =============================================================================
@@ -901,6 +1061,41 @@ export const GLOBAL_OBJECTS = [
   'workflow',
   'activity',
   'context',
+  'g_navigation',
+  'g_ui_scripts',
+  'g_dialog',
+  'g_modal',
+  'email',
+  'event',
+  'source',
+  'target',
+  'sn_ws',
+  'sn_fd',
+  'sn_auth',
+  'sn_cc',
+  'sn_cmdb',
+  'sn_connect',
+  'sn_cs',
+  'sn_discovery',
+  'sn_impex',
+  'sn_interaction',
+  'sn_km',
+  'sn_ml',
+  'sn_nlp',
+  'sn_notification',
+  'sn_ppm',
+  'sn_sc',
+  'sn_sm',
+  'sn_uc',
+  'RP',
+  'jelly',
+  '$sp',
+  'data',
+  'input',
+  'options',
+  'portal',
+  'page',
+  'instance',
 ];
 
 // =============================================================================
@@ -923,6 +1118,7 @@ export const CONTEXT_METHOD_MAP = {
   'GlideSysAttachment': GLIDE_SYS_ATTACHMENT_METHODS,
   'ArrayUtil': ARRAY_UTIL_METHODS,
   'XMLDocument2': XML_DOCUMENT_2_METHODS,
+  'XMLDocument': XML_DOCUMENT_2_METHODS,
   'XMLNode': XML_NODE_METHODS,
   'GlideEmailOutbound': GLIDE_EMAIL_OUTBOUND_METHODS,
   'RESTMessageV2': REST_MESSAGE_V2_METHODS,
@@ -938,6 +1134,9 @@ export const CONTEXT_METHOD_MAP = {
   'GlideEncrypter': GLIDE_ENCRYPTER_METHODS,
   'TemplatePrinter': TEMPLATE_PRINTER_METHODS,
   'AbstractAjaxProcessor': GLIDE_AJAX_METHODS,
+  'GlideDBFunctionBuilder': GLIDE_DB_FUNCTION_BUILDER_METHODS,
+  '$sp': SP_METHODS,
+  'FlowAPI': FLOW_API_METHODS,
   
   // Global objects
   'gs': GLIDE_SYSTEM_METHODS,
@@ -946,6 +1145,7 @@ export const CONTEXT_METHOD_MAP = {
   'g_processor': SCRIPTED_PROCESSOR_METHODS,
   'current': GLIDE_RECORD_METHODS,
   'previous': GLIDE_RECORD_METHODS,
+  'email': GLIDE_EMAIL_OUTBOUND_METHODS,
 };
 
 // =============================================================================
@@ -983,6 +1183,9 @@ export const ALL_METHODS = [...new Set([
   ...GLIDE_ENCRYPTER_METHODS,
   ...TEMPLATE_PRINTER_METHODS,
   ...SCRIPTED_PROCESSOR_METHODS,
+  ...GLIDE_DB_FUNCTION_BUILDER_METHODS,
+  ...SP_METHODS,
+  ...FLOW_API_METHODS,
 ])];
 
 export default {
