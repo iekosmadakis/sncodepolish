@@ -36,24 +36,20 @@ SNCodePolish uses a **two-pass approach** for typo detection:
 
 **Example**: `gr.addQuerry()` → `gr.addQuery()` (detected because `gr` is known to be a `GlideRecord`)
 
-#### Common Typo Corrections
+#### Common Typo Corrections (Sample)
 | Category | Examples |
 |----------|----------|
-| **GlideRecord methods** | `addQeury` → `addQuery`, `getValeu` → `getValue`, `udpate` → `update`, `isert` → `insert`, `delte` → `delete`, `getRefrence` → `getReference`, `setLimt` → `setLimit`, `deleteReocrd` → `deleteRecord`, `getUniqueVlaue` → `getUniqueValue` |
-| **GlideElement methods** | `getJournlaEntry` → `getJournalEntry`, `chnages` → `changes`, `getReferecneTable` → `getReferenceTable` |
-| **GlideDateTime methods** | `addSecnods` → `addSeconds`, `addDyas` → `addDays`, `getDayOfWek` → `getDayOfWeek`, `comparTo` → `compareTo` |
-| **GlideUser methods** | `hasRoel` → `hasRole`, `isMemberOF` → `isMemberOf`, `getEmial` → `getEmail`, `getFristName` → `getFirstName` |
-| **GlideSession methods** | `isLogedIn` → `isLoggedIn`, `getClientIp` → `getClientIP`, `isInteratcive` → `isInteractive` |
-| **Class names** | `GlideReocrd` → `GlideRecord`, `GlideDateTiem` → `GlideDateTime`, `GlideAggreaget` → `GlideAggregate`, `GlideAjxa` → `GlideAjax`, `GlideSysAttachement` → `GlideSysAttachment`, `ArrayUitl` → `ArrayUtil` |
-| **g_form methods** | `setMandaotry` → `setMandatory`, `setVisble` → `setVisible`, `setReadOnyl` → `setReadOnly`, `addOptin` → `addOption`, `showFieldMesg` → `showFieldMsg` |
-| **g_user methods** | `hasRoel` → `hasRole`, `getUserNmae` → `getUserName`, `getFulName` → `getFullName` |
-| **GlideAjax methods** | `addParm` → `addParam`, `getXMLWiat` → `getXMLWait`, `getXmlWait` → `getXMLWait`, `getXMLAnwser` → `getXMLAnswer`, `getParamater` → `getParameter` |
-| **gs methods** | `gs.getPrefernce` → `gs.getPreference`, `gs.addInfoMessge` → `gs.addInfoMessage`, `gs.getProprety` → `gs.getProperty` |
-| **REST/SOAP methods** | `setRequestBdoy` → `setRequestBody`, `setHttpMehtod` → `setHttpMethod`, `getResponeBody` → `getResponseBody`, `RESTMessagV2` → `RESTMessageV2` |
-| **ArrayUtil methods** | `contians` → `contains`, `unqiue` → `unique`, `differnce` → `diff` |
-| **GlideSysAttachment** | `wirte` → `write`, `getContetnt` → `getContent`, `deleteAttachement` → `deleteAttachment` |
-| **Workflow methods** | `scratchapd` → `scratchpad` |
-| **Other classes** | `GlidePluginManger` → `GlidePluginManager`, `GlideTableHiearchy` → `GlideTableHierarchy` |
+| **GlideRecord** | `addQeury` → `addQuery`, `getValeu` → `getValue`, `udpate` → `update`, `getRefrence` → `getReference` |
+| **GlideElement** | `chnages` → `changes`, `getJournlaEntry` → `getJournalEntry`, `toStirng` → `toString` |
+| **GlideDateTime** | `addSecnods` → `addSeconds`, `comparTo` → `compareTo`, `getDayOfWek` → `getDayOfWeek` |
+| **GlideUser** | `hasRoel` → `hasRole`, `isMemberOF` → `isMemberOf`, `getEmial` → `getEmail` |
+| **Class names** | `GlideReocrd` → `GlideRecord`, `GlideDateTiem` → `GlideDateTime`, `ArrayUitl` → `ArrayUtil` |
+| **g_form** | `setMandaotry` → `setMandatory`, `setVisble` → `setVisible`, `addOptin` → `addOption` |
+| **GlideAjax** | `addParm` → `addParam`, `getXMLWiat` → `getXMLWait`, `getParamater` → `getParameter` |
+| **gs** | `gs.getPrefernce` → `gs.getPreference`, `gs.addInfoMessge` → `gs.addInfoMessage` |
+| **REST/SOAP** | `setRequestBdoy` → `setRequestBody`, `setHttpMehtod` → `setHttpMethod`, `excute` → `execute` |
+
+*The dictionary includes 60+ classes and 400+ methods across GlideRecord, GlideAggregate, GlideElement, GlideDateTime, GlideSchedule, GlideDuration, GlideUser, GlideSession, GlideAjax, g_form, g_user, gs, RESTMessageV2, SOAPMessageV2, ArrayUtil, GlideSysAttachment, XMLDocument2, GlideEmailOutbound, Workflow, and more.*
 
 #### Intelligent Fixes
 | Fix | Description |
