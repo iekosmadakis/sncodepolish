@@ -1,11 +1,13 @@
 # SNCodePolish
 
-A client-side web application for formatting and polishing ServiceNow JavaScript code and JSON. All processing happens in the browser - your code never leaves your machine.
+A client-side web application for formatting, polishing, and comparing ServiceNow JavaScript code and JSON. All processing happens in the browser - your code never leaves your machine.
 
 ## Features
 
 ### 🔀 Dual Mode Support
-Switch between **JavaScript** (ServiceNow) and **JSON** modes with one click. Each mode provides specialized formatting, fixes, and validation.
+Switch between **JavaScript** (ServiceNow) and **JSON** modes with one click. Each mode provides:
+- **Polish**: Format, fix, and validate code/JSON
+- **Compare**: Side-by-side comparison with visual diff highlighting
 
 ### ✨ Code Formatting
 Formats code using Prettier with ServiceNow-friendly settings (JavaScript) or clean JSON formatting.
@@ -158,7 +160,7 @@ SNCodePolish uses a **two-pass approach** for typo detection:
 | **Large file** | Files over 1000 lines |
 | **Control characters** | Unescaped special characters |
 
-### ⚖️ JSON Diff
+### ⚖️ JSON Compare
 Compare two JSON objects and visualize their differences:
 - **Side-by-side editors** for original and modified JSON
 - **Visual diff output** with color-coded changes
@@ -168,11 +170,28 @@ Compare two JSON objects and visualize their differences:
 
 ---
 
+## ⚖️ JavaScript Compare Mode
+
+Compare and polish JavaScript code side-by-side:
+- **Monaco DiffEditor** with real-time visual comparison
+- **Color-coded highlighting** for additions, deletions, and modifications
+- **Polish the revised code** while keeping the original intact
+- **Toggle highlighting** on/off to focus on code or differences
+- **Download both files** (original and revised) with timestamps
+- **Swap button** to reverse comparison direction
+
+---
+
 ### ⌨️ Keyboard Shortcut
-- `Ctrl+Enter` / `Cmd+Enter` - Polish code/JSON
+- `Ctrl+Enter` / `Cmd+Enter` - Context-aware action:
+  - **Polish mode**: Polish the code/JSON
+  - **Compare mode (JSON)**: Compare the two JSON objects
+  - **Compare mode (JS)**: Polish the revised code
 
 ### 💾 Export
-- Download polished output as `.js` or `.json` file
+- **Polish mode**: Downloads both original and polished files with timestamps
+- **Compare mode**: Downloads both original and revised files with timestamps
+- Filenames: `original_YYYYMMDD_HHMMSS.js` and `polished_YYYYMMDD_HHMMSS.js` (or `.json`)
 
 ### 🔒 Privacy
 - Works offline after initial load
@@ -205,12 +224,27 @@ After building, the `dist/` folder contains static files that can be deployed to
 
 ## 📖 Usage
 
+### Polish Mode
 1. Select mode: **JavaScript** or **JSON** using the toggle
-2. Paste your code/JSON in the left panel
+2. Paste your code/JSON in the **Original Code** panel (left)
 3. Click **Polish Code/JSON** or press `Ctrl+Enter`
-4. View formatted output in the right panel with highlighted changes
+4. View formatted output in the **Polished Code** panel (right) with highlighted changes
 5. Click the fixes/warnings badge to see details
-6. Click **Copy** to copy the polished output
+6. Click **Copy** or **Download** to export the polished output
+
+### Compare Mode (JavaScript)
+1. Select **JavaScript** mode and click **Compare**
+2. Enter original code on the left and revised code on the right
+3. See real-time visual diff highlighting
+4. Click **Polish Revised Code** to format only the right panel
+5. Toggle highlighting on/off as needed
+6. Click **Download** to save both files
+
+### Compare Mode (JSON)
+1. Select **JSON** mode and click **Compare**
+2. Enter original JSON on the left and modified JSON on the right
+3. Click **Compare JSON** to see the visual difference breakdown
+4. Use the swap button to reverse comparison direction
 
 ## Tech Stack
 
