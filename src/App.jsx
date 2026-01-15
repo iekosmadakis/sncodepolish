@@ -1,11 +1,19 @@
+/**
+ * @fileoverview SNCodePolish - Main Application Component
+ * @description React-based code formatter and analyzer for ServiceNow JavaScript and JSON.
+ * Features dual-mode support (Polish/Compare), Monaco editor integration, and offline processing.
+ */
+
 import { useState, useCallback, useEffect, useRef } from 'react';
-import Editor from '@monaco-editor/react';
+import Editor, { DiffEditor } from '@monaco-editor/react';
 import { polishCode, polishJson } from './utils/codePolish';
 import { diff } from 'jsondiffpatch';
 import * as htmlFormatter from 'jsondiffpatch/formatters/html';
 import 'jsondiffpatch/formatters/styles/html.css';
 
-// Sample ServiceNow code for demonstration
+// =============================================================================
+// SAMPLE CODE
+// =============================================================================
 const SAMPLE_JS_CODE = `// Business Rule: Auto-assign incidents
 // TODO: Add error handling
 (function executeRule(current, previous) {
@@ -85,7 +93,57 @@ const SAMPLE_DIFF_RIGHT = `{
   ]
 }`;
 
-// Custom dark theme for Monaco (purple-tinted)
+// Sample JavaScript code for Compare mode - Original version
+const SAMPLE_JS_DIFF_LEFT = `// Business Rule: Auto-assign incidents
+(function executeRule(current, previous) {
+    var gr = new GlideRecord('incident');
+    gr.addQuery('state', 1);
+    gr.addQuery('assigned_to', '');
+    gr.query();
+    
+    while (gr.next()) {
+        if (current.active == true) {
+            var user = gr.getValue('assigned_to');
+            gr.setValue('assigned_to', gs.getUserID());
+            gr.update();
+        }
+    }
+    
+    gs.info('Auto-assignment complete');
+})(current, previous);`;
+
+// Sample JavaScript code for Compare mode - Modified version
+const SAMPLE_JS_DIFF_RIGHT = `// Business Rule: Auto-assign high priority incidents
+// Added: Priority filter and error handling
+(function executeRule(current, previous) {
+    var gr = new GlideRecord('incident');
+    gr.addQuery('state', 1);
+    gr.addQuery('priority', '<=', 2);
+    gr.addQuery('assigned_to', '');
+    gr.setLimit(100);
+    gr.query();
+    
+    var count = 0;
+    while (gr.next()) {
+        if (current.active === true) {
+            try {
+                gr.setValue('assigned_to', gs.getUserID());
+                gr.setWorkflow(false);
+                gr.update();
+                count++;
+            } catch (e) {
+                gs.error('Failed to assign: ' + e.message);
+            }
+        }
+    }
+    
+    gs.info('Auto-assignment complete. Assigned: ' + count);
+})(current, previous);`;
+
+// =============================================================================
+// MONACO EDITOR THEME
+// =============================================================================
+
 const customTheme = {
   base: 'vs-dark',
   inherit: true,
@@ -119,8 +177,13 @@ const customTheme = {
   }
 };
 
+// =============================================================================
+// UTILITY FUNCTIONS
+// =============================================================================
+
 /**
- * Simple diff algorithm to find changed lines
+ * Computes line-by-line diff between original and formatted code.
+ * Used for highlighting changed lines in the output editor.
  */
 function computeLineDiff(original, formatted) {
   const originalLines = original.split('\n');
@@ -143,9 +206,15 @@ function computeLineDiff(original, formatted) {
   return changes;
 }
 
+// =============================================================================
+// MAIN COMPONENT
+// =============================================================================
+
 function App() {
-  const [mode, setMode] = useState('javascript'); // 'javascript' or 'json'
-  const [jsonSubMode, setJsonSubMode] = useState('format'); // 'format' or 'diff'
+  // Mode state
+  const [mode, setMode] = useState('javascript');
+  const [jsonSubMode, setJsonSubMode] = useState('format');
+  const [jsSubMode, setJsSubMode] = useState('format');
   const [inputCode, setInputCode] = useState('');
   const [outputCode, setOutputCode] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -165,13 +234,18 @@ function App() {
   const handleCompareRef = useRef(null);
   const primaryActionRef = useRef(null);
 
-  // JSON Diff state
+  // JSON Compare state
   const [diffLeftJson, setDiffLeftJson] = useState('');
   const [diffRightJson, setDiffRightJson] = useState('');
   const [diffResult, setDiffResult] = useState(null);
   const [diffStats, setDiffStats] = useState(null);
 
-  // Show toast notification
+  // JavaScript Compare state
+  const [diffLeftJs, setDiffLeftJs] = useState('');
+  const [diffRightJs, setDiffRightJs] = useState('');
+  const [diffHighlightEnabled, setDiffHighlightEnabled] = useState(true);
+
+  // Toast notification
   const showToast = useCallback((message, type = 'success') => {
     setToast({ show: true, message, type });
     setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
@@ -263,6 +337,128 @@ function App() {
     setDiffStats(null);
     showToast('JSONs swapped', 'success');
   }, [diffLeftJson, diffRightJson, showToast]);
+
+  // Polish the right side code in diff mode
+  const handlePolishDiffRight = useCallback(async () => {
+    if (!diffRightJs.trim()) {
+      showToast('Please provide code to polish', 'error');
+      return;
+    }
+
+    const originalCode = diffRightJs;
+    setIsProcessing(true);
+    setStatus({ type: 'processing', message: 'Polishing...' });
+
+    try {
+      const result = await polishCode(diffRightJs);
+
+      if (result.success) {
+        setDiffRightJs(result.output);
+        setFixes(result.fixes);
+        setWarnings(result.warnings || []);
+        setErrors(result.errors || []);
+        setMetrics(result.metrics);
+        
+        // Compute changed lines for the badge
+        const changes = computeLineDiff(originalCode, result.output);
+        setChangedLines(changes);
+        
+        setStatus({ type: 'ready', message: `Polished with ${result.fixes.length} fixes` });
+        
+        if (result.fixes.length > 0) {
+          showToast(`Code polished! ${result.fixes.length} fixes applied`, 'success');
+        } else {
+          showToast('Code formatted successfully!', 'success');
+        }
+      } else {
+        setFixes(result.fixes || []);
+        setWarnings(result.warnings || []);
+        setErrors(result.errors || []);
+        setChangedLines([]);
+        setMetrics(null);
+        setStatus({ type: 'error', message: 'Errors found' });
+        showToast(result.error, 'error');
+      }
+    } catch (error) {
+      setStatus({ type: 'error', message: 'Failed to polish' });
+      showToast(`Error: ${error.message}`, 'error');
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [diffRightJs, showToast]);
+
+  // Load sample JS diff code
+  const handleLoadJsDiffSample = useCallback(() => {
+    setDiffLeftJs(SAMPLE_JS_DIFF_LEFT);
+    setDiffRightJs(SAMPLE_JS_DIFF_RIGHT);
+    showToast('Sample code loaded', 'success');
+  }, [showToast]);
+
+  // Clear JS diff
+  const handleClearJsDiff = useCallback(() => {
+    setDiffLeftJs('');
+    setDiffRightJs('');
+    setFixes([]);
+    setWarnings([]);
+    setErrors([]);
+    setMetrics(null);
+    setChangedLines([]);
+    setStatus({ type: 'ready', message: 'Ready' });
+  }, []);
+
+  // Swap left and right JS
+  const handleSwapJs = useCallback(() => {
+    const temp = diffLeftJs;
+    setDiffLeftJs(diffRightJs);
+    setDiffRightJs(temp);
+    showToast('Code swapped', 'success');
+  }, [diffLeftJs, diffRightJs, showToast]);
+
+  // Download both JS diff files
+  const handleDownloadJsDiff = useCallback(() => {
+    if (!diffLeftJs.trim() && !diffRightJs.trim()) {
+      showToast('No code to download', 'error');
+      return;
+    }
+    
+    // Generate timestamp: YYYYMMDD_HHMMSS
+    const now = new Date();
+    const timestamp = now.getFullYear().toString() +
+      String(now.getMonth() + 1).padStart(2, '0') +
+      String(now.getDate()).padStart(2, '0') + '_' +
+      String(now.getHours()).padStart(2, '0') +
+      String(now.getMinutes()).padStart(2, '0') +
+      String(now.getSeconds()).padStart(2, '0');
+    
+    const downloadFile = (content, filename) => {
+      const blob = new Blob([content], { type: 'text/javascript' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    };
+    
+    let filesDownloaded = 0;
+    
+    if (diffLeftJs.trim()) {
+      downloadFile(diffLeftJs, `original_${timestamp}.js`);
+      filesDownloaded++;
+    }
+    
+    if (diffRightJs.trim()) {
+      // Small delay to avoid browser blocking multiple downloads
+      setTimeout(() => {
+        downloadFile(diffRightJs, `revised_${timestamp}.js`);
+      }, 100);
+      filesDownloaded++;
+    }
+    
+    showToast(`Downloaded ${filesDownloaded} file${filesDownloaded > 1 ? 's' : ''}`, 'success');
+  }, [diffLeftJs, diffRightJs, showToast]);
 
   // Render diff result as formatted output
   const renderDiffHtml = useCallback(() => {
@@ -391,7 +587,7 @@ function App() {
     }
   }, [outputCode, showToast]);
 
-  // Download output as file
+  // Download both original and polished files
   const handleDownload = useCallback(() => {
     if (!outputCode) {
       showToast('No output to download', 'error');
@@ -410,20 +606,34 @@ function App() {
       String(now.getMinutes()).padStart(2, '0') +
       String(now.getSeconds()).padStart(2, '0');
     
-    const filename = `polished_${timestamp}.${extension}`;
+    const downloadFile = (content, filename) => {
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    };
     
-    const blob = new Blob([outputCode], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    let filesDownloaded = 0;
     
-    showToast(`Downloaded ${filename}`, 'success');
-  }, [outputCode, mode, showToast]);
+    // Download original file if available
+    if (inputCode.trim()) {
+      downloadFile(inputCode, `original_${timestamp}.${extension}`);
+      filesDownloaded++;
+    }
+    
+    // Download polished file with small delay to avoid browser blocking
+    setTimeout(() => {
+      downloadFile(outputCode, `polished_${timestamp}.${extension}`);
+    }, 100);
+    filesDownloaded++;
+    
+    showToast(`Downloaded ${filesDownloaded} file${filesDownloaded > 1 ? 's' : ''}`, 'success');
+  }, [inputCode, outputCode, mode, showToast]);
 
   // Handle mode toggle
   const handleModeToggle = useCallback((newMode) => {
@@ -431,6 +641,7 @@ function App() {
     
     setMode(newMode);
     setJsonSubMode('format');
+    setJsSubMode('format');
     setInputCode('');
     setOutputCode('');
     setFixes([]);
@@ -442,6 +653,8 @@ function App() {
     setDiffRightJson('');
     setDiffResult(null);
     setDiffStats(null);
+    setDiffLeftJs('');
+    setDiffRightJs('');
     setStatus({ type: 'ready', message: 'Ready to polish' });
     showToast(`Switched to ${newMode === 'json' ? 'JSON' : 'JavaScript'} mode`, 'success');
   }, [mode, showToast]);
@@ -457,6 +670,18 @@ function App() {
       setStatus({ type: 'ready', message: 'Ready to polish' });
     }
   }, [jsonSubMode]);
+
+  // Handle JavaScript sub-mode toggle
+  const handleJsSubModeToggle = useCallback((newSubMode) => {
+    if (newSubMode === jsSubMode) return;
+    
+    setJsSubMode(newSubMode);
+    if (newSubMode === 'diff') {
+      setStatus({ type: 'ready', message: 'Ready to compare' });
+    } else {
+      setStatus({ type: 'ready', message: 'Ready to polish' });
+    }
+  }, [jsSubMode]);
 
   // Configure Monaco editor
   const handleEditorMount = useCallback((editor, monaco, isInput) => {
@@ -503,22 +728,26 @@ function App() {
   useEffect(() => {
     handlePolishRef.current = handlePolish;
     handleCompareRef.current = handleCompareJson;
-    // Primary action depends on current mode
+    // Primary action depends on current mode and sub-mode
     if (mode === 'json' && jsonSubMode === 'diff') {
       primaryActionRef.current = handleCompareJson;
+    } else if (mode === 'javascript' && jsSubMode === 'diff') {
+      primaryActionRef.current = handlePolishDiffRight;
     } else {
       primaryActionRef.current = handlePolish;
     }
-  }, [handlePolish, handleCompareJson, mode, jsonSubMode]);
+  }, [handlePolish, handleCompareJson, handlePolishDiffRight, mode, jsonSubMode, jsSubMode]);
 
   // Keyboard shortcut handler
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
         e.preventDefault();
-        // Call appropriate action based on mode
+        // Call appropriate action based on mode and sub-mode
         if (mode === 'json' && jsonSubMode === 'diff') {
           handleCompareJson();
+        } else if (mode === 'javascript' && jsSubMode === 'diff') {
+          handlePolishDiffRight();
         } else {
           handlePolish();
         }
@@ -531,7 +760,7 @@ function App() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handlePolish, handleCompareJson, mode, jsonSubMode]);
+  }, [handlePolish, handleCompareJson, handlePolishDiffRight, mode, jsonSubMode, jsSubMode]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -617,7 +846,7 @@ function App() {
             </button>
           </div>
           
-          {/* JSON Sub-mode Toggle */}
+          {/* Sub-mode Toggle */}
           {mode === 'json' && (
             <div className="sub-mode-toggle">
               <button
@@ -632,7 +861,25 @@ function App() {
                 onClick={() => handleJsonSubModeToggle('diff')}
                 title="Compare two JSON objects"
               >
-                ⚖️ Diff
+                ⚖️ Compare
+              </button>
+            </div>
+          )}
+          {mode === 'javascript' && (
+            <div className="sub-mode-toggle">
+              <button
+                className={`sub-mode-btn ${jsSubMode === 'format' ? 'active' : ''}`}
+                onClick={() => handleJsSubModeToggle('format')}
+                title="Format & Polish Code"
+              >
+                ✨ Polish
+              </button>
+              <button
+                className={`sub-mode-btn ${jsSubMode === 'diff' ? 'active' : ''}`}
+                onClick={() => handleJsSubModeToggle('diff')}
+                title="Compare two code snippets"
+              >
+                ⚖️ Compare
               </button>
             </div>
           )}
@@ -662,6 +909,24 @@ function App() {
                 </>
               )}
             </button>
+          ) : mode === 'javascript' && jsSubMode === 'diff' ? (
+            <button 
+              className="polish-btn" 
+              onClick={handlePolishDiffRight}
+              disabled={isProcessing || !diffRightJs.trim()}
+            >
+              {isProcessing ? (
+                <>
+                  <div className="spinner" />
+                  Polishing...
+                </>
+              ) : (
+                <>
+                  <span className="icon">✨</span>
+                  Polish Revised Code
+                </>
+              )}
+            </button>
           ) : (
             <button 
               className="polish-btn" 
@@ -686,7 +951,176 @@ function App() {
 
       {/* Main Content */}
       <main className="main-content">
-        {mode === 'json' && jsonSubMode === 'diff' ? (
+        {mode === 'javascript' && jsSubMode === 'diff' ? (
+          /* JavaScript Diff View */
+          <div className="js-diff-layout">
+            {/* Panel Headers Row */}
+            <div className="js-diff-headers">
+              {/* Left Panel Header */}
+              <div className="js-diff-panel-header">
+                <div className="panel-title">
+                  <span className="dot input" />
+                  Original Code
+                </div>
+              </div>
+
+              {/* Right Panel Header */}
+              <div className="js-diff-panel-header">
+                <div className="panel-title">
+                  <span className="dot output" />
+                  Revised Code
+                  {/* Fixes/Warnings/Errors Dropdown */}
+                  {(fixes.length > 0 || warnings.length > 0 || errors.length > 0) && (
+                    <div className="fixes-dropdown-container" ref={fixesDropdownRef}>
+                      <button 
+                        className={`fixes-badge clickable ${showFixesDropdown ? 'active' : ''}`}
+                        onClick={() => setShowFixesDropdown(!showFixesDropdown)}
+                      >
+                        <span className="fixes-badge-icon">✓</span>
+                        <span>{fixes.length} fixes</span>
+                        {errors.length > 0 && (
+                          <span className="error-count">✕ {errors.length}</span>
+                        )}
+                        {warnings.length > 0 && (
+                          <span className="warning-count">⚠ {warnings.length}</span>
+                        )}
+                        <span className={`fixes-badge-arrow ${showFixesDropdown ? 'open' : ''}`}>▾</span>
+                      </button>
+                      
+                      {showFixesDropdown && (
+                        <div className="fixes-dropdown">
+                          {fixes.length > 0 && (
+                            <>
+                              <div className="fixes-dropdown-header">
+                                <span className="fixes-dropdown-title">🔧 Fixes Applied</span>
+                              </div>
+                              <ul className="fixes-list">
+                                {fixes.map((fix, index) => (
+                                  <li key={index} className="fix-item">
+                                    <span className="fix-icon">✓</span>
+                                    <span className="fix-text">{fix}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </>
+                          )}
+                          {errors.length > 0 && (
+                            <>
+                              <div className="fixes-dropdown-header errors-header">
+                                <span className="fixes-dropdown-title">🚫 Errors</span>
+                              </div>
+                              <ul className="fixes-list errors-list">
+                                {errors.map((error, index) => (
+                                  <li key={index} className="fix-item error-item">
+                                    <span className="fix-icon error-icon">✕</span>
+                                    <span className="fix-text">{error}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </>
+                          )}
+                          {warnings.length > 0 && (
+                            <>
+                              <div className="fixes-dropdown-header warnings-header">
+                                <span className="fixes-dropdown-title">⚠️ Warnings</span>
+                              </div>
+                              <ul className="fixes-list warnings-list">
+                                {warnings.map((warning, index) => (
+                                  <li key={index} className="fix-item warning-item">
+                                    <span className="fix-icon warning-icon">⚠</span>
+                                    <span className="fix-text">{warning}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {changedLines.length > 0 && (
+                    <span className="changes-badge">
+                      {changedLines.length} lines changed
+                    </span>
+                  )}
+                </div>
+                <div className="panel-actions">
+                  <button className="panel-btn" onClick={handleLoadJsDiffSample}>
+                    📋 Load Sample
+                  </button>
+                  <button 
+                    className="panel-btn" 
+                    onClick={handleDownloadJsDiff}
+                    disabled={!diffLeftJs.trim() && !diffRightJs.trim()}
+                  >
+                    ⬇️ Download
+                  </button>
+                  <button className="panel-btn" onClick={handleClearJsDiff}>
+                    🗑️ Clear
+                  </button>
+                  <button 
+                    className={`panel-btn ${diffHighlightEnabled ? 'active' : ''}`}
+                    onClick={() => setDiffHighlightEnabled(!diffHighlightEnabled)}
+                    title={diffHighlightEnabled ? 'Hide highlighting' : 'Show highlighting'}
+                  >
+                    {diffHighlightEnabled ? '🎨 Highlighting On' : '⬜ Highlighting Off'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Swap Button (Centered) */}
+              <div className="js-diff-swap-container">
+                <button 
+                  className="diff-swap-btn" 
+                  onClick={handleSwapJs}
+                  title="Swap left and right code"
+                >
+                  ⇄
+                </button>
+              </div>
+            </div>
+
+            {/* Side-by-Side Diff Editor */}
+            <div className={`js-diff-editor-container ${!diffHighlightEnabled ? 'diff-highlight-disabled' : ''}`}>
+              <DiffEditor
+                height="100%"
+                language="javascript"
+                original={diffLeftJs}
+                modified={diffRightJs}
+                theme="vs-dark"
+                onMount={(editor, monaco) => {
+                  // Apply custom theme
+                  monaco.editor.defineTheme('sn-dark', customTheme);
+                  monaco.editor.setTheme('sn-dark');
+                  
+                  // Track content changes for both editors
+                  const originalEditor = editor.getOriginalEditor();
+                  const modifiedEditor = editor.getModifiedEditor();
+                  
+                  originalEditor.onDidChangeModelContent(() => {
+                    setDiffLeftJs(originalEditor.getValue());
+                  });
+                  
+                  modifiedEditor.onDidChangeModelContent(() => {
+                    setDiffRightJs(modifiedEditor.getValue());
+                  });
+                }}
+                options={{
+                  ...editorOptions,
+                  renderSideBySide: true,
+                  originalEditable: true,
+                  enableSplitViewResizing: false,
+                  renderOverviewRuler: true,
+                  diffWordWrap: 'on',
+                  ignoreTrimWhitespace: false,
+                  splitViewDefaultRatio: 0.517,
+                }}
+                originalModelPath="original.js"
+                modifiedModelPath="modified.js"
+              />
+            </div>
+          </div>
+        ) : mode === 'json' && jsonSubMode === 'diff' ? (
           /* JSON Diff View */
           <>
             {/* Left JSON Panel */}
@@ -804,7 +1238,7 @@ function App() {
               <div className="panel-header">
                 <div className="panel-title">
                   <span className="dot input" />
-                  Input {mode === 'json' ? 'JSON' : 'Code'}
+                  Original {mode === 'json' ? 'JSON' : 'Code'}
                 </div>
                 <div className="panel-actions">
                   <button className="panel-btn" onClick={handleLoadSample}>
@@ -834,7 +1268,7 @@ function App() {
               <div className="panel-header">
                 <div className="panel-title">
                   <span className="dot output" />
-                  Polished Output
+                  Polished {mode === 'json' ? 'JSON' : 'Code'}
                   {(fixes.length > 0 || warnings.length > 0 || errors.length > 0) && (
                     <div className="fixes-dropdown-container" ref={fixesDropdownRef}>
                       <button 
@@ -983,7 +1417,7 @@ function App() {
         <div className="status-item">
           {mode === 'json' 
             ? (jsonSubMode === 'diff' ? 'JSON Diff' : 'JSON Format')
-            : 'JavaScript / ServiceNow'
+            : (jsSubMode === 'diff' ? 'Compare & Polish' : 'JavaScript / ServiceNow')
           }
         </div>
       </footer>
