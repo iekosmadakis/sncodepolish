@@ -244,6 +244,8 @@ function App() {
   const [diffLeftJs, setDiffLeftJs] = useState('');
   const [diffRightJs, setDiffRightJs] = useState('');
   const [diffHighlightEnabled, setDiffHighlightEnabled] = useState(true);
+  const [showSettings, setShowSettings] = useState(false);
+  const settingsDropdownRef = useRef(null);
 
   // Toast notification
   const showToast = useCallback((message, type = 'success') => {
@@ -475,10 +477,13 @@ function App() {
 
   // Apply highlighting decorations to output editor
   const applyHighlighting = useCallback((editor, monaco, changes) => {
-    if (!editor || !monaco || !changes.length) return;
+    if (!editor || !monaco) return;
 
     // Clear previous decorations
     decorationsRef.current = editor.deltaDecorations(decorationsRef.current, []);
+    
+    // If highlighting is disabled or no changes, just clear and return
+    if (!diffHighlightEnabled || !changes.length) return;
 
     // Create new decorations for changed lines
     const decorations = changes.map(change => ({
@@ -495,7 +500,7 @@ function App() {
     }));
 
     decorationsRef.current = editor.deltaDecorations([], decorations);
-  }, []);
+  }, [diffHighlightEnabled]);
 
   // Polish the code
   const handlePolish = useCallback(async () => {
@@ -717,12 +722,12 @@ function App() {
     }
   }, [changedLines, applyHighlighting]);
 
-  // Apply highlighting when output changes
+  // Apply highlighting when output changes or highlighting setting changes
   useEffect(() => {
-    if (outputEditorRef.current && monacoRef.current && changedLines.length > 0) {
+    if (outputEditorRef.current && monacoRef.current) {
       applyHighlighting(outputEditorRef.current, monacoRef.current, changedLines);
     }
-  }, [changedLines, outputCode, applyHighlighting]);
+  }, [changedLines, outputCode, applyHighlighting, diffHighlightEnabled]);
 
   // Keep refs updated so Monaco action always has latest version
   useEffect(() => {
@@ -762,19 +767,22 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handlePolish, handleCompareJson, handlePolishDiffRight, mode, jsonSubMode, jsSubMode]);
 
-  // Close dropdown when clicking outside
+  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (fixesDropdownRef.current && !fixesDropdownRef.current.contains(e.target)) {
         setShowFixesDropdown(false);
       }
+      if (settingsDropdownRef.current && !settingsDropdownRef.current.contains(e.target)) {
+        setShowSettings(false);
+      }
     };
 
-    if (showFixesDropdown) {
+    if (showFixesDropdown || showSettings) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showFixesDropdown]);
+  }, [showFixesDropdown, showSettings]);
 
   const editorOptions = {
     fontSize: 14,
@@ -1058,13 +1066,37 @@ function App() {
                   <button className="panel-btn" onClick={handleClearJsDiff}>
                     🗑️ Clear
                   </button>
-                  <button 
-                    className={`panel-btn ${diffHighlightEnabled ? 'active' : ''}`}
-                    onClick={() => setDiffHighlightEnabled(!diffHighlightEnabled)}
-                    title={diffHighlightEnabled ? 'Hide highlighting' : 'Show highlighting'}
-                  >
-                    {diffHighlightEnabled ? '🎨 Highlighting On' : '⬜ Highlighting Off'}
-                  </button>
+                  {/* Settings Dropdown */}
+                  <div className="settings-dropdown-container" ref={settingsDropdownRef}>
+                    <button 
+                      className={`panel-btn settings-btn ${showSettings ? 'active' : ''}`}
+                      onClick={() => setShowSettings(!showSettings)}
+                      title="Settings"
+                    >
+                      ⚙️
+                    </button>
+                    {showSettings && (
+                      <div className="settings-dropdown">
+                        <div className="settings-dropdown-header">
+                          <span className="settings-dropdown-title">⚙️ Settings</span>
+                        </div>
+                        <div className="settings-list">
+                          <label className="settings-item">
+                            <span className="settings-label">Diff Highlighting</span>
+                            <button
+                              className={`settings-toggle ${diffHighlightEnabled ? 'on' : 'off'}`}
+                              onClick={() => setDiffHighlightEnabled(!diffHighlightEnabled)}
+                            >
+                              <span className="toggle-track">
+                                <span className="toggle-thumb" />
+                              </span>
+                              <span className="toggle-label">{diffHighlightEnabled ? 'On' : 'Off'}</span>
+                            </button>
+                          </label>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -1358,6 +1390,37 @@ function App() {
                   >
                     ⬇️ Download
                   </button>
+                  {/* Settings Dropdown */}
+                  <div className="settings-dropdown-container" ref={settingsDropdownRef}>
+                    <button 
+                      className={`panel-btn settings-btn ${showSettings ? 'active' : ''}`}
+                      onClick={() => setShowSettings(!showSettings)}
+                      title="Settings"
+                    >
+                      ⚙️
+                    </button>
+                    {showSettings && (
+                      <div className="settings-dropdown">
+                        <div className="settings-dropdown-header">
+                          <span className="settings-dropdown-title">⚙️ Settings</span>
+                        </div>
+                        <div className="settings-list">
+                          <label className="settings-item">
+                            <span className="settings-label">Diff Highlighting</span>
+                            <button
+                              className={`settings-toggle ${diffHighlightEnabled ? 'on' : 'off'}`}
+                              onClick={() => setDiffHighlightEnabled(!diffHighlightEnabled)}
+                            >
+                              <span className="toggle-track">
+                                <span className="toggle-thumb" />
+                              </span>
+                              <span className="toggle-label">{diffHighlightEnabled ? 'On' : 'Off'}</span>
+                            </button>
+                          </label>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
               
