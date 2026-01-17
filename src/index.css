@@ -1490,22 +1490,21 @@ body {
 /* Selected Node Info Panel */
 .selected-node-info {
   position: absolute;
-  bottom: 16px;
-  left: 60px;
-  max-width: 400px;
-  background: var(--bg-elevated);
+  bottom: 17px;
+  left: 70px;
+  max-width: 480px;
+  height: 114px;
+  background: var(--bg-tertiary);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-  max-height: 150px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   overflow: auto;
   z-index: 10;
-  opacity: 0.95;
 }
 
 .selected-node-info:hover {
-  opacity: 1;
+  border-color: var(--border-glow);
 }
 
 .selected-node-header {
