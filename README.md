@@ -8,6 +8,7 @@ A client-side web application for formatting, polishing, and comparing ServiceNo
 Switch between **JavaScript** (ServiceNow) and **JSON** modes with one click. Each mode provides:
 - **Polish**: Format, fix, and validate code/JSON
 - **Compare**: Side-by-side comparison with visual diff highlighting
+- **Visualize** (JavaScript only): Interactive flow diagram visualization
 
 ### ✨ Code Formatting
 Formats code using Prettier with ServiceNow-friendly settings (JavaScript) or clean JSON formatting.
@@ -182,11 +183,58 @@ Compare and polish JavaScript code side-by-side:
 
 ---
 
+## 🔍 JavaScript Visualize Mode
+
+Generate interactive flow diagrams from your ServiceNow code:
+
+### Flow Diagram Features
+- **Interactive canvas** with zoom, pan, and minimap navigation
+- **Click-to-code**: Click any node to see its code location and details
+- **Automatic layout**: Sequential statements flow vertically, branches flow horizontally
+- **Real-time generation**: Instantly visualize code structure
+
+### Node Types
+| Node | Color | Description |
+|------|-------|-------------|
+| **Function** | Blue | Function declarations and expressions |
+| **Condition** | Yellow | If/else statements and ternary operators |
+| **Loop** | Purple | For, while, do-while, for-in, for-of loops |
+| **Try/Catch** | Red | Exception handling blocks |
+| **Switch** | Orange | Switch statements |
+| **Call** | Cyan | Function and method calls |
+| **Return** | Pink | Return statements |
+| **GlideRecord** | Green | GlideRecord operations |
+| **GlideSystem** | Teal | gs.* method calls |
+
+### Edge Types
+| Style | Description |
+|-------|-------------|
+| **Solid line** | Normal control flow |
+| **Green dashed** | True branch (if condition met) |
+| **Red dashed** | False branch (else) |
+| **Orange dotted** | Exception path (catch block) |
+
+### ServiceNow-Aware Parsing
+The visualizer recognizes ServiceNow-specific patterns:
+- **GlideRecord operations**: `new GlideRecord()`, `query()`, `next()`, `update()`, etc.
+- **GlideSystem calls**: `gs.info()`, `gs.getUser()`, `gs.getProperty()`, etc.
+- **IIFE patterns**: Correctly parses `(function executeRule() {...})()` wrappers
+- **Business Rule context**: Handles `current`, `previous` parameters
+
+### Info Panel
+Click any node to see:
+- Node type and subtype
+- Exact code snippet
+- Line number in source
+
+---
+
 ### ⌨️ Keyboard Shortcut
 - `Ctrl+Enter` / `Cmd+Enter` - Context-aware action:
   - **Polish mode**: Polish the code/JSON
   - **Compare mode (JSON)**: Compare the two JSON objects
   - **Compare mode (JS)**: Polish the revised code
+  - **Visualize mode (JS)**: Generate flow diagram
 
 ### 💾 Export
 - **Polish mode**: Downloads both original and polished files with timestamps
@@ -246,6 +294,17 @@ After building, the `dist/` folder contains static files that can be deployed to
 3. Click **Compare JSON** to see the visual difference breakdown
 4. Use the swap button to reverse comparison direction
 
+### Visualize Mode (JavaScript)
+1. Select **JavaScript** mode and click **Visualize**
+2. Paste your ServiceNow code in the editor (or click **Load Sample**)
+3. Click **Generate Flow** or press `Ctrl+Enter`
+4. Explore the diagram:
+   - **Zoom**: Use mouse wheel or +/- controls
+   - **Pan**: Click and drag the canvas
+   - **Minimap**: Navigate large diagrams quickly
+   - **Click nodes**: View code details in the info panel
+5. Use the **Legend** (top-right) to understand node colors and edge types
+
 ## Tech Stack
 
 | Technology | Version | Purpose |
@@ -254,6 +313,8 @@ After building, the `dist/` folder contains static files that can be deployed to
 | Vite | 7.x | Build tool |
 | Monaco Editor | 4.x | Code editor (VS Code engine) |
 | Prettier | 3.x | Code formatting |
+| React Flow | 11.x | Interactive flow diagrams |
+| Acorn | 8.x | JavaScript AST parsing |
 
 ## Project Structure
 
@@ -262,8 +323,12 @@ src/
 ├── App.jsx                    # Main React component
 ├── index.css                  # Application styles
 ├── main.jsx                   # React entry point
+├── components/
+│   └── FlowNode.jsx           # Custom React Flow node component
 └── utils/
     ├── codePolish.js          # Main orchestrator (JS + JSON)
+    ├── astParser.js           # JavaScript AST parsing & control flow extraction
+    ├── flowGenerator.js       # React Flow diagram generation
     ├── fixes/
     │   ├── genericFixes.js         # Generic JavaScript fixes
     │   ├── servicenowFixes.js      # ServiceNow-specific fixes
