@@ -14,7 +14,7 @@ import ReactFlow, {
   MiniMap
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { polishCode, polishJson } from './utils/codePolish';
+import { polishCode, polishJson, formatCodeStructure } from './utils/codePolish';
 import { parseCode, extractControlFlow } from './utils/astParser';
 import { generateFlowDiagram, getFlowStats } from './utils/flowGenerator';
 import FlowNode from './components/FlowNode';
@@ -469,7 +469,7 @@ function App() {
   }), []);
 
   // Generate flow diagram from code
-  const handleGenerateFlow = useCallback(() => {
+  const handleGenerateFlow = useCallback(async () => {
     if (!visualizeCode.trim()) {
       showToast('Please paste some code first', 'error');
       return;
@@ -478,8 +478,25 @@ function App() {
     setVisualizeError(null);
     setSelectedFlowNode(null);
 
-    // Parse the code
-    const { ast, error } = parseCode(visualizeCode);
+    // Step 1: Light formatting (structural cleanup only, no code changes)
+    const formatResult = await formatCodeStructure(visualizeCode);
+    
+    if (!formatResult.success) {
+      setVisualizeError(`Format error: ${formatResult.error}`);
+      setFlowNodes([]);
+      setFlowEdges([]);
+      setFlowStats(null);
+      showToast('Code has syntax errors', 'error');
+      return;
+    }
+
+    const formattedCode = formatResult.output;
+    
+    // Update the editor with formatted code
+    setVisualizeCode(formattedCode);
+
+    // Step 2: Parse the formatted code
+    const { ast, error } = parseCode(formattedCode);
     
     if (error) {
       setVisualizeError(`Parse error: ${error}`);
@@ -490,8 +507,8 @@ function App() {
       return;
     }
 
-    // Extract control flow
-    const controlFlowNodes = extractControlFlow(ast, visualizeCode);
+    // Step 3: Extract control flow
+    const controlFlowNodes = extractControlFlow(ast, formattedCode);
     
     if (controlFlowNodes.length === 0) {
       setVisualizeError('No control flow structures found in the code');
@@ -502,49 +519,59 @@ function App() {
       return;
     }
 
-    // Generate React Flow diagram
+    // Step 4: Generate React Flow diagram
     const { nodes, edges } = generateFlowDiagram(controlFlowNodes);
     
     setFlowNodes(nodes);
     setFlowEdges(edges);
     setFlowStats(getFlowStats(controlFlowNodes));
     showToast(`Flow diagram generated with ${nodes.length} nodes`, 'success');
-  }, [visualizeCode, showToast, setFlowNodes, setFlowEdges]);
+  }, [visualizeCode, showToast, setFlowNodes, setFlowEdges, setVisualizeCode]);
 
   // Handle node click in flow diagram (click-to-code)
   const handleFlowNodeClick = useCallback((event, node) => {
     setSelectedFlowNode(node);
     
     // Highlight the corresponding code in the editor
-    if (visualizeEditorRef.current && monacoRef.current && node.data.range) {
+    // Use loc (line/column) from AST for accurate positioning
+    if (visualizeEditorRef.current && monacoRef.current && node.data.loc) {
       const editor = visualizeEditorRef.current;
       const monaco = monacoRef.current;
-      const [start, end] = node.data.range;
+      const { start, end } = node.data.loc;
       
-      // Convert character positions to line/column
       const model = editor.getModel();
       if (model) {
-        const startPos = model.getPositionAt(start);
-        const endPos = model.getPositionAt(end);
+        // Use line numbers directly from AST loc property
+        // Acorn uses 1-based line numbers, which matches Monaco
+        const startLine = start.line;
+        const endLine = end.line;
         
-        // Create selection range
-        const range = new monaco.Range(
-          startPos.lineNumber,
-          startPos.column,
-          endPos.lineNumber,
-          endPos.column
+        // Create selection range for exact text
+        const selectionRange = new monaco.Range(
+          startLine,
+          start.column + 1, // Acorn uses 0-based columns, Monaco uses 1-based
+          endLine,
+          end.column + 1
+        );
+        
+        // Create whole-line range for highlighting
+        const highlightRange = new monaco.Range(
+          startLine,
+          1,
+          endLine,
+          model.getLineMaxColumn(endLine)
         );
         
         // Set selection and reveal
-        editor.setSelection(range);
-        editor.revealRangeInCenter(range);
+        editor.setSelection(selectionRange);
+        editor.revealRangeInCenter(highlightRange);
         
-        // Add temporary highlight decoration
+        // Add temporary highlight decoration (whole lines)
         const decorations = editor.deltaDecorations([], [{
-          range,
+          range: highlightRange,
           options: {
             className: 'flow-highlight',
-            isWholeLine: false,
+            isWholeLine: true,
             overviewRuler: {
               color: '#00d4aa',
               position: monaco.editor.OverviewRulerLane.Full

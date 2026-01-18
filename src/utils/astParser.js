@@ -666,15 +666,18 @@ export function extractControlFlow(ast, code) {
           node.block.body.forEach(child => walk(child, tryNode.id, {}));
         }
 
-        // Catch block
+        // Catch block - use body range for accurate highlighting
         if (node.handler) {
+          const handler = node.handler;
           const catchNode = {
             id: generateId(),
             type: 'catch',
-            label: `catch (${node.handler.param?.name || 'e'})`,
+            label: `catch (${handler.param?.name || 'e'})`,
+            snippet: getSnippet(handler.start, handler.body?.start || handler.end),
             parentId: tryNode.id,
-            loc: node.handler.loc,
-            range: [node.handler.start, node.handler.end]
+            loc: handler.loc,
+            // Use the catch clause start (at 'catch' keyword) to end of body
+            range: [handler.start, handler.end]
           };
           nodes.push(catchNode);
 

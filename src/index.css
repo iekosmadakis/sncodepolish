@@ -1539,11 +1539,10 @@ body {
   max-height: 60px;
 }
 
-/* Flow highlight decoration in editor */
+/* Flow highlight decoration in editor (whole line) */
 .flow-highlight {
-  background: rgba(0, 212, 170, 0.2) !important;
-  border: 1px solid var(--accent-primary);
-  border-radius: 2px;
+  background: rgba(0, 212, 170, 0.15) !important;
+  border-left: 3px solid var(--accent-primary) !important;
 }
 
 /* Error state */

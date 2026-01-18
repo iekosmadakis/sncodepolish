@@ -147,6 +147,56 @@ export async function polishCode(code) {
 }
 
 // ============================================================================
+// LIGHT FORMATTING (Visualize Mode)
+// ============================================================================
+
+/**
+ * Light formatting for Visualize mode - only structural cleanup.
+ * Uses Prettier for consistent formatting without any code replacements or fixes.
+ * This ensures AST positions align correctly with displayed code.
+ *
+ * @param {string} code - The code to format
+ * @returns {Promise<Object>} Result object with formatted output or error
+ */
+export async function formatCodeStructure(code) {
+  if (!code || code.trim() === '') {
+    return {
+      success: false,
+      error: 'No code provided',
+      output: ''
+    };
+  }
+
+  try {
+    // Only apply Prettier formatting - no custom fixes
+    const formatted = await prettier.format(code, JS_PRETTIER_CONFIG);
+
+    return {
+      success: true,
+      output: formatted
+    };
+  } catch (prettierError) {
+    // Extract error location from Prettier error message
+    const errorMatch = prettierError.message.match(/\((\d+):(\d+)\)/);
+    let errorInfo = prettierError.message;
+
+    if (errorMatch) {
+      const line = parseInt(errorMatch[1]);
+      const col = parseInt(errorMatch[2]);
+      const lines = code.split('\n');
+      const problemLine = lines[line - 1] || '';
+      errorInfo = `Syntax error at line ${line}, column ${col}:\n"${problemLine.trim()}"`;
+    }
+
+    return {
+      success: false,
+      error: errorInfo,
+      output: code // Return original code on error
+    };
+  }
+}
+
+// ============================================================================
 // JSON FORMATTING
 // ============================================================================
 
