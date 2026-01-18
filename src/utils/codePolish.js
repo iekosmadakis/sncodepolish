@@ -1,5 +1,5 @@
 /**
- * @fileoverview SNCodePolish - Main Code Formatter
+ * @fileoverview GlideAware Studio - Main Code Formatter
  * @description Orchestrates code formatting using Prettier and custom fixes.
  * Supports JavaScript (ServiceNow) and JSON modes.
  * All processing happens client-side (offline capable).

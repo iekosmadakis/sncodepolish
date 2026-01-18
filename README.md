@@ -1,4 +1,4 @@
-# SNCodePolish
+# GlideAware Studio
 
 A client-side web application for formatting, polishing, and comparing ServiceNow JavaScript code and JSON. All processing happens in the browser - your code never leaves your machine.
 
@@ -27,7 +27,7 @@ Formats code using Prettier with ServiceNow-friendly settings (JavaScript) or cl
 ### 🔧 ServiceNow Auto-Fixes
 
 #### Intelligent Typo Detection (Fuzzy Matching)
-SNCodePolish uses a **two-pass approach** for typo detection:
+GlideAware Studio uses a **two-pass approach** for typo detection:
 
 1. **Fast regex patterns** for common known typos (instant)
 2. **Fuzzy matching** using Damerau-Levenshtein edit distance for any remaining typos

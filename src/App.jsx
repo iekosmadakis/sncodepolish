@@ -1,5 +1,5 @@
 /**
- * @fileoverview SNCodePolish - Main Application Component
+ * @fileoverview GlideAware Studio - Main Application Component
  * @description React-based code formatter and analyzer for ServiceNow JavaScript and JSON.
  * Features dual-mode support (Polish/Compare), Monaco editor integration, and offline processing.
  */
@@ -997,7 +997,7 @@ function App() {
                 <path d="M38 12 L26 52" stroke="currentColor" strokeWidth="5" strokeLinecap="round" fill="none" opacity="0.7"/>
               </svg>
             </div>
-            <span className="logo-text">SNCodePolish</span>
+            <span className="logo-text">GlideAware Studio</span>
           </div>
           <span className="header-subtitle">
             {mode === 'json' ? 'JSON Formatter & Validator' : 'ServiceNow Code Formatter & Polisher'}
