@@ -1151,6 +1151,19 @@ body {
 .settings-label {
   font-size: 13px;
   color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.settings-label strong {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.settings-label small {
+  font-size: 11px;
+  color: var(--text-muted);
 }
 
 .settings-toggle {
@@ -1265,6 +1278,30 @@ body {
   margin-left: 8px;
 }
 
+/* View Mode Badge */
+.view-mode-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  margin-left: 8px;
+  transition: all 0.2s ease;
+}
+
+.view-mode-badge.logic {
+  background: rgba(124, 58, 237, 0.15);
+  border: 1px solid #7c3aed;
+  color: #a78bfa;
+}
+
+.view-mode-badge.fullops {
+  background: rgba(234, 179, 8, 0.15);
+  border: 1px solid #eab308;
+  color: #fcd34d;
+}
+
 /* Flow Stats */
 .flow-stats {
   display: flex;
@@ -1289,6 +1326,9 @@ body {
 .flow-stat.conditions { color: #f59e0b; border-color: #f59e0b; }
 .flow-stat.loops { color: #06b6d4; border-color: #06b6d4; }
 .flow-stat.servicenow { color: #00d4aa; border-color: #00d4aa; }
+.flow-stat.variables { color: #94a3b8; border-color: #475569; }
+.flow-stat.calls { color: #9ca3af; border-color: #4b5563; }
+.flow-stat.assignments { color: #a1a1aa; border-color: #525252; }
 
 /* React Flow Customization */
 .react-flow__node {

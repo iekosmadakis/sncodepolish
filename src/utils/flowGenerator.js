@@ -107,6 +107,22 @@ const NODE_STYLES = {
     borderColor: '#6366f1',
     color: '#ffffff'
   },
+  // Full Ops view node types (lower visual priority)
+  variable: {
+    background: 'linear-gradient(135deg, #475569 0%, #334155 100%)',
+    borderColor: '#475569',
+    color: '#cbd5e1'
+  },
+  'call-generic': {
+    background: 'linear-gradient(135deg, #4b5563 0%, #374151 100%)',
+    borderColor: '#4b5563',
+    color: '#d1d5db'
+  },
+  'assignment-generic': {
+    background: 'linear-gradient(135deg, #525252 0%, #404040 100%)',
+    borderColor: '#525252',
+    color: '#d4d4d8'
+  },
   branch: {
     background: 'transparent',
     borderColor: 'transparent',
@@ -482,6 +498,9 @@ export function getFlowStats(flowNodes) {
     servicenowCalls: 0,
     tryCatch: 0,
     returns: 0,
+    variables: 0,
+    calls: 0,
+    assignments: 0,
     total: flowNodes.length
   };
 
@@ -506,6 +525,17 @@ export function getFlowStats(flowNodes) {
         break;
       case 'return':
         stats.returns++;
+        break;
+      case 'variable':
+        stats.variables++;
+        break;
+      case 'call':
+      case 'call-generic':
+        stats.calls++;
+        break;
+      case 'assignment':
+      case 'assignment-generic':
+        stats.assignments++;
         break;
     }
   });

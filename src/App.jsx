@@ -263,6 +263,9 @@ function App() {
   const [visualizeError, setVisualizeError] = useState(null);
   const [selectedFlowNode, setSelectedFlowNode] = useState(null);
   const visualizeEditorRef = useRef(null);
+  const [visualizeViewMode, setVisualizeViewMode] = useState('logic'); // 'logic' or 'fullops'
+  const [showVisualizeSettings, setShowVisualizeSettings] = useState(false);
+  const visualizeSettingsRef = useRef(null);
   const [outputCode, setOutputCode] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [status, setStatus] = useState({ type: 'ready', message: 'Ready to polish' });
@@ -468,6 +471,54 @@ function App() {
     custom: FlowNode
   }), []);
 
+  /**
+   * Filters flow nodes based on view mode
+   * Logic View: control flow, database interactions, high-impact behavior
+   * Full Ops View: everything including variable init, logging, function calls
+   */
+  const filterFlowNodes = useCallback((nodes, viewMode) => {
+    if (viewMode === 'fullops') {
+      // Full Ops View shows everything
+      return nodes;
+    }
+    
+    // Logic View: filter to show only high-impact nodes
+    const logicViewTypes = [
+      'function',
+      'condition',
+      'loop',
+      'switch',
+      'case',
+      'try',
+      'catch',
+      'finally',
+      'return',
+      'throw',
+      'break',
+      'continue',
+      'servicenow',
+      'servicenow-call',
+      'branch'
+    ];
+    
+    // Build set of kept node IDs for parent reference fixing
+    const filteredNodes = nodes.filter(node => logicViewTypes.includes(node.type));
+    const keptIds = new Set(filteredNodes.map(n => n.id));
+    
+    // Update parentId references to point to nearest kept ancestor
+    return filteredNodes.map(node => {
+      if (node.parentId && !keptIds.has(node.parentId)) {
+        // Find the nearest ancestor that was kept
+        let currentParent = nodes.find(n => n.id === node.parentId);
+        while (currentParent && !keptIds.has(currentParent.id)) {
+          currentParent = nodes.find(n => n.id === currentParent.parentId);
+        }
+        return { ...node, parentId: currentParent?.id || null };
+      }
+      return node;
+    });
+  }, []);
+
   // Generate flow diagram from code
   const handleGenerateFlow = useCallback(async () => {
     if (!visualizeCode.trim()) {
@@ -519,14 +570,26 @@ function App() {
       return;
     }
 
-    // Step 4: Generate React Flow diagram
-    const { nodes, edges } = generateFlowDiagram(controlFlowNodes);
+    // Step 4: Filter nodes based on view mode
+    const filteredNodes = filterFlowNodes(controlFlowNodes, visualizeViewMode);
+
+    if (filteredNodes.length === 0) {
+      setVisualizeError('No nodes to display in current view mode');
+      setFlowNodes([]);
+      setFlowEdges([]);
+      setFlowStats(null);
+      showToast('No nodes in current view', 'error');
+      return;
+    }
+
+    // Step 5: Generate React Flow diagram
+    const { nodes, edges } = generateFlowDiagram(filteredNodes);
     
     setFlowNodes(nodes);
     setFlowEdges(edges);
-    setFlowStats(getFlowStats(controlFlowNodes));
+    setFlowStats(getFlowStats(filteredNodes));
     showToast(`Flow diagram generated with ${nodes.length} nodes`, 'success');
-  }, [visualizeCode, showToast, setFlowNodes, setFlowEdges, setVisualizeCode]);
+  }, [visualizeCode, visualizeViewMode, filterFlowNodes, showToast, setFlowNodes, setFlowEdges, setVisualizeCode]);
 
   // Handle node click in flow diagram (click-to-code)
   const handleFlowNodeClick = useCallback((event, node) => {
@@ -607,6 +670,14 @@ function App() {
     setVisualizeError(null);
     setSelectedFlowNode(null);
   }, [setFlowNodes, setFlowEdges]);
+
+  // Re-generate flow when view mode changes (if there's code)
+  useEffect(() => {
+    if (visualizeCode.trim() && flowNodes.length > 0) {
+      handleGenerateFlow();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visualizeViewMode]);
 
   // Download both JS diff files
   const handleDownloadJsDiff = useCallback(() => {
@@ -974,13 +1045,16 @@ function App() {
       if (settingsDropdownRef.current && !settingsDropdownRef.current.contains(e.target)) {
         setShowSettings(false);
       }
+      if (visualizeSettingsRef.current && !visualizeSettingsRef.current.contains(e.target)) {
+        setShowVisualizeSettings(false);
+      }
     };
 
-    if (showFixesDropdown || showSettings) {
+    if (showFixesDropdown || showSettings || showVisualizeSettings) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showFixesDropdown, showSettings]);
+  }, [showFixesDropdown, showSettings, showVisualizeSettings]);
 
   const editorOptions = {
     fontSize: 14,
@@ -1199,6 +1273,55 @@ function App() {
                   <button className="panel-btn" onClick={handleClearVisualize}>
                     🗑️ Clear
                   </button>
+                  {/* View Mode Settings Dropdown */}
+                  <div className="settings-dropdown-container" ref={visualizeSettingsRef}>
+                    <button 
+                      className={`panel-btn settings-btn ${showVisualizeSettings ? 'active' : ''}`}
+                      onClick={() => setShowVisualizeSettings(!showVisualizeSettings)}
+                      title="View Settings"
+                    >
+                      ⚙️
+                    </button>
+                    {showVisualizeSettings && (
+                      <div className="settings-dropdown">
+                        <div className="settings-dropdown-header">
+                          <span className="settings-dropdown-title">⚙️ View Mode</span>
+                        </div>
+                        <div className="settings-list">
+                          <label className="settings-item">
+                            <span className="settings-label">
+                              <strong>Logic View</strong>
+                              <small>Control flow & database ops</small>
+                            </span>
+                            <button
+                              className={`settings-toggle ${visualizeViewMode === 'logic' ? 'on' : 'off'}`}
+                              onClick={() => setVisualizeViewMode('logic')}
+                            >
+                              <span className="toggle-track">
+                                <span className="toggle-thumb" />
+                              </span>
+                              <span className="toggle-label">{visualizeViewMode === 'logic' ? 'Active' : ''}</span>
+                            </button>
+                          </label>
+                          <label className="settings-item">
+                            <span className="settings-label">
+                              <strong>Full Ops View</strong>
+                              <small>Everything that executes</small>
+                            </span>
+                            <button
+                              className={`settings-toggle ${visualizeViewMode === 'fullops' ? 'on' : 'off'}`}
+                              onClick={() => setVisualizeViewMode('fullops')}
+                            >
+                              <span className="toggle-track">
+                                <span className="toggle-thumb" />
+                              </span>
+                              <span className="toggle-label">{visualizeViewMode === 'fullops' ? 'Active' : ''}</span>
+                            </button>
+                          </label>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="editor-container">
@@ -1226,6 +1349,9 @@ function App() {
                 <div className="panel-title">
                   <span className="dot output" />
                   Flow Diagram
+                  <span className={`view-mode-badge ${visualizeViewMode}`}>
+                    {visualizeViewMode === 'logic' ? 'Logic View' : 'Full Ops'}
+                  </span>
                   {flowStats && (
                     <span className="flow-stats-badge">
                       {flowStats.total} nodes
@@ -1246,6 +1372,20 @@ function App() {
                       )}
                       {flowStats.servicenowCalls > 0 && (
                         <span className="flow-stat servicenow">{flowStats.servicenowCalls} SN calls</span>
+                      )}
+                      {/* Full Ops view additional stats */}
+                      {visualizeViewMode === 'fullops' && (
+                        <>
+                          {flowStats.variables > 0 && (
+                            <span className="flow-stat variables">{flowStats.variables} vars</span>
+                          )}
+                          {flowStats.calls > 0 && (
+                            <span className="flow-stat calls">{flowStats.calls} calls</span>
+                          )}
+                          {flowStats.assignments > 0 && (
+                            <span className="flow-stat assignments">{flowStats.assignments} assigns</span>
+                          )}
+                        </>
                       )}
                     </div>
                   )}
@@ -1321,6 +1461,23 @@ function App() {
                           <span className="flow-legend-color" style={{ background: '#22c55e' }}></span>
                           <span>Return</span>
                         </div>
+                        {/* Full Ops view additional node types */}
+                        {visualizeViewMode === 'fullops' && (
+                          <>
+                            <div className="flow-legend-item">
+                              <span className="flow-legend-color" style={{ background: '#475569' }}></span>
+                              <span>Variable</span>
+                            </div>
+                            <div className="flow-legend-item">
+                              <span className="flow-legend-color" style={{ background: '#4b5563' }}></span>
+                              <span>Call</span>
+                            </div>
+                            <div className="flow-legend-item">
+                              <span className="flow-legend-color" style={{ background: '#525252' }}></span>
+                              <span>Assignment</span>
+                            </div>
+                          </>
+                        )}
                       </div>
                       <div className="flow-legend-section">
                         <div className="flow-legend-title">Edges</div>

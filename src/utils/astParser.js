@@ -790,6 +790,19 @@ export function extractControlFlow(ast, code) {
             if (decl.init.type === 'FunctionExpression' || 
                 decl.init.type === 'ArrowFunctionExpression') {
               walk(decl.init, parentId, { name: decl.id?.name });
+            } else {
+              // Generic variable initialization (for Full Ops view)
+              const varName = decl.id?.name || '?';
+              const varNode = {
+                id: generateId(),
+                type: 'variable',
+                label: `${node.kind} ${varName}`,
+                snippet: getSnippet(node.start, node.end),
+                loc: node.loc,
+                range: [node.start, node.end],
+                parentId
+              };
+              nodes.push(varNode);
             }
           }
         });
@@ -1091,13 +1104,13 @@ export function extractControlFlow(ast, code) {
             return iifeNode.id;
           }
           
-          // Check for ServiceNow API calls
+          // Check for ServiceNow API calls (high priority)
           const snCall = getServiceNowCallType(expr);
-          if (snCall || isSignificantCall(expr)) {
+          if (snCall) {
             const callLabel = getCallLabel(expr);
             const callNode = {
               id: generateId(),
-              type: snCall ? 'servicenow-call' : 'call',
+              type: 'servicenow-call',
               subtype: snCall?.category,
               label: callLabel,
               snippet: getSnippet(node.start, node.end),
@@ -1108,17 +1121,50 @@ export function extractControlFlow(ast, code) {
             nodes.push(callNode);
             return callNode.id;
           }
+          
+          // Check for other significant calls (gs.*, g_form.*, etc.)
+          if (isSignificantCall(expr)) {
+            const callLabel = getCallLabel(expr);
+            const callNode = {
+              id: generateId(),
+              type: 'call',
+              label: callLabel,
+              snippet: getSnippet(node.start, node.end),
+              loc: node.loc,
+              range: [node.start, node.end],
+              parentId
+            };
+            nodes.push(callNode);
+            return callNode.id;
+          }
+          
+          // Generic function call (for Full Ops view)
+          const callLabel = getCallLabel(expr);
+          const callNode = {
+            id: generateId(),
+            type: 'call-generic',
+            label: callLabel,
+            snippet: getSnippet(node.start, node.end),
+            loc: node.loc,
+            range: [node.start, node.end],
+            parentId
+          };
+          nodes.push(callNode);
+          return callNode.id;
         }
 
-        // Check for assignments with ServiceNow calls
+        // Check for assignments
         if (expr.type === 'AssignmentExpression') {
           const right = expr.right;
+          const leftSnippet = getSnippet(expr.left.start, expr.left.end, 15);
+          
+          // Assignment with significant call
           if (right.type === 'CallExpression' && isSignificantCall(right)) {
             const callLabel = getCallLabel(right);
             const assignNode = {
               id: generateId(),
               type: 'assignment',
-              label: `${getSnippet(expr.left.start, expr.left.end, 15)} = ${callLabel}`,
+              label: `${leftSnippet} = ${callLabel}`,
               snippet: getSnippet(node.start, node.end),
               loc: node.loc,
               range: [node.start, node.end],
@@ -1127,6 +1173,20 @@ export function extractControlFlow(ast, code) {
             nodes.push(assignNode);
             return assignNode.id;
           }
+          
+          // Generic assignment (for Full Ops view)
+          const rightSnippet = getSnippet(right.start, right.end, 20);
+          const assignNode = {
+            id: generateId(),
+            type: 'assignment-generic',
+            label: `${leftSnippet} = ${rightSnippet}`,
+            snippet: getSnippet(node.start, node.end),
+            loc: node.loc,
+            range: [node.start, node.end],
+            parentId
+          };
+          nodes.push(assignNode);
+          return assignNode.id;
         }
         break;
       }
