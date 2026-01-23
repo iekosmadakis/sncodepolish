@@ -1402,6 +1402,10 @@ function App() {
                     nodesConnectable={false}
                     nodesDraggable={true}
                     elementsSelectable={true}
+                    panActivationKeyCode={null}
+                    deleteKeyCode={null}
+                    selectionKeyCode={null}
+                    multiSelectionKeyCode={null}
                     defaultEdgeOptions={{
                       type: 'smoothstep',
                       animated: false
