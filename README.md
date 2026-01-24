@@ -205,23 +205,23 @@ Toggle between two visualization modes using the ⚙️ settings button:
 - **Logic View**: Shows generic labels (e.g., `if()`) and hides low-impact nodes like variable declarations
 
 ### Node Types
-| Node | Color | Description |
-|------|-------|-------------|
-| **Function** | Purple (#7c3aed) | Function declarations and expressions |
-| **Condition** | Orange (#f59e0b) | If/else statements (diamond shape) |
-| **Loop** | Cyan (#06b6d4) | For, while, do-while, for-in, for-of loops |
-| **Switch** | Violet (#8b5cf6) | Switch statements |
-| **Case** | Light Violet (#a78bfa) | Switch case clauses |
-| **Try** | Blue (#3b82f6) | Try blocks |
-| **Catch** | Red (#ef4444) | Catch blocks |
-| **Finally** | Slate (#64748b) | Finally blocks |
-| **Return** | Green (#22c55e) | Return statements |
-| **Throw** | Red (#ef4444) | Throw statements |
-| **Break/Continue** | Orange/Teal | Loop control statements |
-| **ServiceNow** | Teal (#00d4aa) | GlideRecord, gs.*, g_form.*, etc. |
-| **Variable** | Gray (#475569) | Variable declarations (Full Ops only) |
-| **Call** | Gray (#4b5563) | Generic function calls (Full Ops only) |
-| **Assignment** | Gray (#525252) | Variable assignments (Full Ops only) |
+| Node | Description |
+|------|-------------|
+| **Function** | Function declarations and expressions |
+| **Condition** | If/else statements (diamond shape) |
+| **Loop** | For, while, do-while, for-in, for-of loops |
+| **Switch** | Switch statements |
+| **Case** | Switch case clauses |
+| **Try** | Try blocks |
+| **Catch** | Catch blocks |
+| **Finally** | Finally blocks |
+| **Return** | Return statements |
+| **Throw** | Throw statements |
+| **Break/Continue** | Loop control statements |
+| **ServiceNow** | GlideRecord, gs.*, g_form.*, etc. |
+| **Variable** | Variable declarations (Full Ops only) |
+| **Call** | Generic function calls (Full Ops only) |
+| **Assignment** | Variable assignments (Full Ops only) |
 
 ### Edge Types
 | Style | Description |
