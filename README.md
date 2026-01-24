@@ -193,39 +193,58 @@ Generate interactive flow diagrams from your ServiceNow code:
 - **Automatic layout**: Sequential statements flow vertically, branches flow horizontally
 - **Real-time generation**: Instantly visualize code structure
 
+### View Modes
+Toggle between two visualization modes using the ⚙️ settings button:
+
+| Mode | Description | Shows |
+|------|-------------|-------|
+| **Full Ops View** (default) | Everything that executes | All nodes with detailed labels |
+| **Logic View** | Control flow focus | Only control flow, database ops, high-impact behavior |
+
+- **Full Ops View**: Displays detailed labels (e.g., `if (current.active === true)`) and includes all operations
+- **Logic View**: Shows generic labels (e.g., `if()`) and hides low-impact nodes like variable declarations
+
 ### Node Types
 | Node | Color | Description |
 |------|-------|-------------|
-| **Function** | Blue | Function declarations and expressions |
-| **Condition** | Yellow | If/else statements and ternary operators |
-| **Loop** | Purple | For, while, do-while, for-in, for-of loops |
-| **Try/Catch** | Red | Exception handling blocks |
-| **Switch** | Orange | Switch statements |
-| **Call** | Cyan | Function and method calls |
-| **Return** | Pink | Return statements |
-| **GlideRecord** | Green | GlideRecord operations |
-| **GlideSystem** | Teal | gs.* method calls |
+| **Function** | Purple (#7c3aed) | Function declarations and expressions |
+| **Condition** | Orange (#f59e0b) | If/else statements (diamond shape) |
+| **Loop** | Cyan (#06b6d4) | For, while, do-while, for-in, for-of loops |
+| **Switch** | Violet (#8b5cf6) | Switch statements |
+| **Case** | Light Violet (#a78bfa) | Switch case clauses |
+| **Try** | Blue (#3b82f6) | Try blocks |
+| **Catch** | Red (#ef4444) | Catch blocks |
+| **Finally** | Slate (#64748b) | Finally blocks |
+| **Return** | Green (#22c55e) | Return statements |
+| **Throw** | Red (#ef4444) | Throw statements |
+| **Break/Continue** | Orange/Teal | Loop control statements |
+| **ServiceNow** | Teal (#00d4aa) | GlideRecord, gs.*, g_form.*, etc. |
+| **Variable** | Gray (#475569) | Variable declarations (Full Ops only) |
+| **Call** | Gray (#4b5563) | Generic function calls (Full Ops only) |
+| **Assignment** | Gray (#525252) | Variable assignments (Full Ops only) |
 
 ### Edge Types
 | Style | Description |
 |-------|-------------|
-| **Solid line** | Normal control flow |
-| **Green dashed** | True branch (if condition met) |
-| **Red dashed** | False branch (else) |
-| **Orange dotted** | Exception path (catch block) |
+| **Solid gray** | Normal control flow |
+| **Solid green** | True branch (condition met) |
+| **Solid red** | False branch (else path) |
+| **Animated cyan** | Loop body flow |
+| **Dashed red** | Exception path (catch block) |
 
 ### ServiceNow-Aware Parsing
 The visualizer recognizes ServiceNow-specific patterns:
 - **GlideRecord operations**: `new GlideRecord()`, `query()`, `next()`, `update()`, etc.
 - **GlideSystem calls**: `gs.info()`, `gs.getUser()`, `gs.getProperty()`, etc.
+- **Client-side APIs**: `g_form`, `g_list`, `g_user`, `spUtil`, `$sp`
 - **IIFE patterns**: Correctly parses `(function executeRule() {...})()` wrappers
 - **Business Rule context**: Handles `current`, `previous` parameters
 
 ### Info Panel
 Click any node to see:
-- Node type and subtype
-- Exact code snippet
-- Line number in source
+- Node type (e.g., CONDITION, LOOP, SERVICENOW-CALL)
+- Generic label (e.g., `if()`, `while()`, `gr.query()`)
+- Detailed code snippet with arguments
 
 ---
 
@@ -303,7 +322,10 @@ After building, the `dist/` folder contains static files that can be deployed to
    - **Pan**: Click and drag the canvas
    - **Minimap**: Navigate large diagrams quickly
    - **Click nodes**: View code details in the info panel
-5. Use the **Legend** (top-right) to understand node colors and edge types
+5. Toggle **View Mode** using the ⚙️ settings button:
+   - **Full Ops View**: See all operations with detailed labels
+   - **Logic View**: Focus on control flow with simplified labels
+6. Use the **Legend** (top-right) to understand node colors and edge types
 
 ## Tech Stack
 
@@ -315,6 +337,7 @@ After building, the `dist/` folder contains static files that can be deployed to
 | Prettier | 3.x | Code formatting |
 | React Flow | 11.x | Interactive flow diagrams |
 | Acorn | 8.x | JavaScript AST parsing |
+| jsondiffpatch | 0.7.x | JSON comparison and diff |
 
 ## Project Structure
 
