@@ -193,12 +193,6 @@ function calculateLayout(flowNodes) {
     }
   });
 
-  // Track the current Y position for sequential layout
-  let currentY = LAYOUT.INITIAL_Y;
-  
-  // Track column widths for branch layouts
-  const columnWidths = new Map();
-
   /**
    * Recursively position nodes
    * @returns {Object} - { width, height } of the subtree

@@ -280,8 +280,6 @@ function App() {
   const outputEditorRef = useRef(null);
   const monacoRef = useRef(null);
   const decorationsRef = useRef([]);
-  const handlePolishRef = useRef(null);
-  const handleCompareRef = useRef(null);
   const primaryActionRef = useRef(null);
 
   // JSON Compare state
@@ -996,8 +994,6 @@ function App() {
 
   // Keep refs updated so Monaco action always has latest version
   useEffect(() => {
-    handlePolishRef.current = handlePolish;
-    handleCompareRef.current = handleCompareJson;
     // Primary action depends on current mode and sub-mode
     if (mode === 'json' && jsonSubMode === 'diff') {
       primaryActionRef.current = handleCompareJson;

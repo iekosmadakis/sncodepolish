@@ -776,7 +776,6 @@ export function extractControlFlow(ast, code) {
                 type: 'servicenow',
                 subtype: decl.init.callee.name,
                 label: `new ${decl.init.callee.name}()`,
-                varName: decl.id?.name,
                 snippet: getSnippet(node.start, node.end),
                 loc: node.loc,
                 range: [node.start, node.end],
