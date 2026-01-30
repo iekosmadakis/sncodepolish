@@ -1097,7 +1097,7 @@ function App() {
             <span className="logo-text">GlideAware Studio</span>
           </div>
           <span className="header-subtitle">
-            {mode === 'json' ? 'JSON Formatter & Validator' : 'ServiceNow Script Analysis & Refinement'}
+            {mode === 'json' ? 'JSON Formatter & Validator' : 'Script Analysis & Refinement'}
           </span>
         </div>
 
