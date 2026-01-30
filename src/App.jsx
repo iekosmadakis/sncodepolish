@@ -18,6 +18,7 @@ import { polishCode, polishJson, formatCodeStructure } from './utils/codePolish'
 import { parseCode, extractControlFlow } from './utils/astParser';
 import { generateFlowDiagram, getFlowStats } from './utils/flowGenerator';
 import FlowNode from './components/FlowNode';
+import Icon from './components/Icon';
 import { diff } from 'jsondiffpatch';
 import * as htmlFormatter from 'jsondiffpatch/formatters/html';
 import 'jsondiffpatch/formatters/styles/html.css';
@@ -266,6 +267,8 @@ function App() {
   const [visualizeViewMode, setVisualizeViewMode] = useState('fullops'); // 'logic' or 'fullops'
   const [showVisualizeSettings, setShowVisualizeSettings] = useState(false);
   const visualizeSettingsRef = useRef(null);
+  const [showModeInfo, setShowModeInfo] = useState(false);
+  const modeInfoRef = useRef(null);
   const [outputCode, setOutputCode] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [status, setStatus] = useState({ type: 'ready', message: 'Ready to polish' });
@@ -1044,13 +1047,16 @@ function App() {
       if (visualizeSettingsRef.current && !visualizeSettingsRef.current.contains(e.target)) {
         setShowVisualizeSettings(false);
       }
+      if (modeInfoRef.current && !modeInfoRef.current.contains(e.target)) {
+        setShowModeInfo(false);
+      }
     };
 
-    if (showFixesDropdown || showSettings || showVisualizeSettings) {
+    if (showFixesDropdown || showSettings || showVisualizeSettings || showModeInfo) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showFixesDropdown, showSettings, showVisualizeSettings]);
+  }, [showFixesDropdown, showSettings, showVisualizeSettings, showModeInfo]);
 
   const editorOptions = {
     fontSize: 14,
@@ -1130,14 +1136,14 @@ function App() {
                 onClick={() => handleJsonSubModeToggle('format')}
                 title="Format & Validate JSON"
               >
-                ✨ Format
+                <Icon name="sparkles" size={14} /> Format
               </button>
               <button
                 className={`sub-mode-btn ${jsonSubMode === 'diff' ? 'active' : ''}`}
                 onClick={() => handleJsonSubModeToggle('diff')}
                 title="Compare two JSON objects"
               >
-                ⚖️ Compare
+                <Icon name="compare" size={14} /> Compare
               </button>
             </div>
           )}
@@ -1148,21 +1154,21 @@ function App() {
                 onClick={() => handleJsSubModeToggle('format')}
                 title="Format & Polish Code"
               >
-                ✨ Polish
+                <Icon name="sparkles" size={14} /> Polish
               </button>
               <button
                 className={`sub-mode-btn ${jsSubMode === 'diff' ? 'active' : ''}`}
                 onClick={() => handleJsSubModeToggle('diff')}
                 title="Compare two code snippets"
               >
-                ⚖️ Compare
+                <Icon name="compare" size={14} /> Compare
               </button>
               <button
                 className={`sub-mode-btn ${jsSubMode === 'visualize' ? 'active' : ''}`}
                 onClick={() => handleJsSubModeToggle('visualize')}
                 title="Visualize code flow"
               >
-                🔀 Visualize
+                <Icon name="flow" size={14} /> Visualize
               </button>
             </div>
           )}
@@ -1187,7 +1193,7 @@ function App() {
                 </>
               ) : (
                 <>
-                  <span className="icon">⚖️</span>
+                  <span className="icon"><Icon name="compare" size={16} /></span>
                   Compare JSON
                 </>
               )}
@@ -1205,7 +1211,7 @@ function App() {
                 </>
               ) : (
                 <>
-                  <span className="icon">✨</span>
+                  <span className="icon"><Icon name="sparkles" size={16} /></span>
                   Polish Revised Code
                 </>
               )}
@@ -1223,7 +1229,7 @@ function App() {
                 </>
               ) : (
                 <>
-                  <span className="icon">🔀</span>
+                  <span className="icon"><Icon name="flow" size={16} /></span>
                   Generate Flow
                 </>
               )}
@@ -1241,7 +1247,7 @@ function App() {
                 </>
               ) : (
                 <>
-                  <span className="icon">✨</span>
+                  <span className="icon"><Icon name="sparkles" size={16} /></span>
                   Polish {mode === 'json' ? 'JSON' : 'Code'}
                 </>
               )}
@@ -1264,10 +1270,10 @@ function App() {
                 </div>
                 <div className="panel-actions">
                   <button className="panel-btn" onClick={handleLoadVisualizeSample}>
-                    📋 Load Sample
+                    <Icon name="clipboard" size={14} /> Load Sample
                   </button>
                   <button className="panel-btn" onClick={handleClearVisualize}>
-                    🗑️ Clear
+                    <Icon name="trash" size={14} /> Clear
                   </button>
                   {/* View Mode Settings Dropdown */}
                   <div className="settings-dropdown-container" ref={visualizeSettingsRef}>
@@ -1276,12 +1282,12 @@ function App() {
                       onClick={() => setShowVisualizeSettings(!showVisualizeSettings)}
                       title="View Settings"
                     >
-                      ⚙️
+                      <Icon name="settings" size={14} />
                     </button>
                     {showVisualizeSettings && (
                       <div className="settings-dropdown">
                         <div className="settings-dropdown-header">
-                          <span className="settings-dropdown-title">⚙️ View Mode</span>
+                          <span className="settings-dropdown-title"><Icon name="settings" size={14} /> View Mode</span>
                         </div>
                         <div className="settings-list">
                           <label className="settings-item">
@@ -1379,7 +1385,7 @@ function App() {
               <div className="flow-container">
                 {visualizeError ? (
                   <div className="empty-state error-state">
-                    <div className="icon">⚠️</div>
+                    <div className="icon"><Icon name="warning" size={48} /></div>
                     <h3>Error</h3>
                     <p>{visualizeError}</p>
                   </div>
@@ -1491,7 +1497,7 @@ function App() {
                   </ReactFlow>
                 ) : (
                   <div className="empty-state">
-                    <div className="icon">🔀</div>
+                    <div className="icon"><Icon name="flow" size={48} /></div>
                     <h3>No flow diagram yet</h3>
                     <p>Paste your code on the left and click "Generate Flow" to visualize the control flow.</p>
                   </div>
@@ -1537,13 +1543,13 @@ function App() {
                         className={`fixes-badge clickable ${showFixesDropdown ? 'active' : ''}`}
                         onClick={() => setShowFixesDropdown(!showFixesDropdown)}
                       >
-                        <span className="fixes-badge-icon">✓</span>
+                        <span className="fixes-badge-icon"><Icon name="check" size={12} /></span>
                         <span>{fixes.length} fixes</span>
                         {errors.length > 0 && (
-                          <span className="error-count">✕ {errors.length}</span>
+                          <span className="error-count"><Icon name="x" size={10} /> {errors.length}</span>
                         )}
                         {warnings.length > 0 && (
-                          <span className="warning-count">⚠ {warnings.length}</span>
+                          <span className="warning-count"><Icon name="warning" size={10} /> {warnings.length}</span>
                         )}
                         <span className={`fixes-badge-arrow ${showFixesDropdown ? 'open' : ''}`}>▾</span>
                       </button>
@@ -1553,12 +1559,12 @@ function App() {
                           {fixes.length > 0 && (
                             <>
                               <div className="fixes-dropdown-header">
-                                <span className="fixes-dropdown-title">🔧 Fixes Applied</span>
+                                <span className="fixes-dropdown-title"><Icon name="wrench" size={14} /> Fixes Applied</span>
                               </div>
                               <ul className="fixes-list">
                                 {fixes.map((fix, index) => (
                                   <li key={index} className="fix-item">
-                                    <span className="fix-icon">✓</span>
+                                    <span className="fix-icon"><Icon name="check" size={12} /></span>
                                     <span className="fix-text">{fix}</span>
                                   </li>
                                 ))}
@@ -1568,12 +1574,12 @@ function App() {
                           {errors.length > 0 && (
                             <>
                               <div className="fixes-dropdown-header errors-header">
-                                <span className="fixes-dropdown-title">🚫 Errors</span>
+                                <span className="fixes-dropdown-title"><Icon name="x" size={14} /> Errors</span>
                               </div>
                               <ul className="fixes-list errors-list">
                                 {errors.map((error, index) => (
                                   <li key={index} className="fix-item error-item">
-                                    <span className="fix-icon error-icon">✕</span>
+                                    <span className="fix-icon error-icon"><Icon name="x" size={12} /></span>
                                     <span className="fix-text">{error}</span>
                                   </li>
                                 ))}
@@ -1583,12 +1589,12 @@ function App() {
                           {warnings.length > 0 && (
                             <>
                               <div className="fixes-dropdown-header warnings-header">
-                                <span className="fixes-dropdown-title">⚠️ Warnings</span>
+                                <span className="fixes-dropdown-title"><Icon name="warning" size={14} /> Warnings</span>
                               </div>
                               <ul className="fixes-list warnings-list">
                                 {warnings.map((warning, index) => (
                                   <li key={index} className="fix-item warning-item">
-                                    <span className="fix-icon warning-icon">⚠</span>
+                                    <span className="fix-icon warning-icon"><Icon name="warning" size={12} /></span>
                                     <span className="fix-text">{warning}</span>
                                   </li>
                                 ))}
@@ -1607,17 +1613,17 @@ function App() {
                 </div>
                 <div className="panel-actions">
                   <button className="panel-btn" onClick={handleLoadJsDiffSample}>
-                    📋 Load Sample
+                    <Icon name="clipboard" size={14} /> Load Sample
                   </button>
                   <button 
                     className="panel-btn" 
                     onClick={handleDownloadJsDiff}
                     disabled={!diffLeftJs.trim() && !diffRightJs.trim()}
                   >
-                    ⬇️ Download
+                    <Icon name="download" size={14} /> Download
                   </button>
                   <button className="panel-btn" onClick={handleClearJsDiff}>
-                    🗑️ Clear
+                    <Icon name="trash" size={14} /> Clear
                   </button>
                   {/* Settings Dropdown */}
                   <div className="settings-dropdown-container" ref={settingsDropdownRef}>
@@ -1626,12 +1632,12 @@ function App() {
                       onClick={() => setShowSettings(!showSettings)}
                       title="Settings"
                     >
-                      ⚙️
+                      <Icon name="settings" size={14} />
                     </button>
                     {showSettings && (
                       <div className="settings-dropdown">
                         <div className="settings-dropdown-header">
-                          <span className="settings-dropdown-title">⚙️ Settings</span>
+                          <span className="settings-dropdown-title"><Icon name="settings" size={14} /> Settings</span>
                         </div>
                         <div className="settings-list">
                           <label className="settings-item">
@@ -1717,10 +1723,10 @@ function App() {
                 </div>
                 <div className="panel-actions">
                   <button className="panel-btn" onClick={handleLoadDiffSample}>
-                    📋 Load Sample
+                    <Icon name="clipboard" size={14} /> Load Sample
                   </button>
                   <button className="panel-btn" onClick={handleClearDiff}>
-                    🗑️ Clear
+                    <Icon name="trash" size={14} /> Clear
                   </button>
                 </div>
               </div>
@@ -1745,7 +1751,7 @@ function App() {
                 onClick={handleSwapJson}
                 title="Swap left and right JSON"
               >
-                ⇄
+                <Icon name="swap" size={18} />
               </button>
             </div>
 
@@ -1807,7 +1813,7 @@ function App() {
                   />
                 ) : (
                   <div className="empty-state">
-                    <div className="icon">⚖️</div>
+                    <div className="icon"><Icon name="compare" size={48} /></div>
                     <h3>No comparison yet</h3>
                     <p>Paste JSON in both panels and click "Compare JSON" to see the differences.</p>
                   </div>
@@ -1827,10 +1833,10 @@ function App() {
                 </div>
                 <div className="panel-actions">
                   <button className="panel-btn" onClick={handleLoadSample}>
-                    📋 Load Sample
+                    <Icon name="clipboard" size={14} /> Load Sample
                   </button>
                   <button className="panel-btn" onClick={handleClear}>
-                    🗑️ Clear
+                    <Icon name="trash" size={14} /> Clear
                   </button>
                 </div>
               </div>
@@ -1860,13 +1866,13 @@ function App() {
                         className={`fixes-badge clickable ${showFixesDropdown ? 'active' : ''}`}
                         onClick={() => setShowFixesDropdown(!showFixesDropdown)}
                       >
-                        <span className="fixes-badge-icon">✓</span>
+                        <span className="fixes-badge-icon"><Icon name="check" size={12} /></span>
                         <span>{fixes.length} fixes</span>
                         {errors.length > 0 && (
-                          <span className="error-count">✕ {errors.length}</span>
+                          <span className="error-count"><Icon name="x" size={10} /> {errors.length}</span>
                         )}
                         {warnings.length > 0 && (
-                          <span className="warning-count">⚠ {warnings.length}</span>
+                          <span className="warning-count"><Icon name="warning" size={10} /> {warnings.length}</span>
                         )}
                         <span className={`fixes-badge-arrow ${showFixesDropdown ? 'open' : ''}`}>▾</span>
                       </button>
@@ -1876,12 +1882,12 @@ function App() {
                           {fixes.length > 0 && (
                             <>
                               <div className="fixes-dropdown-header">
-                                <span className="fixes-dropdown-title">🔧 Fixes Applied</span>
+                                <span className="fixes-dropdown-title"><Icon name="wrench" size={14} /> Fixes Applied</span>
                               </div>
                               <ul className="fixes-list">
                                 {fixes.map((fix, index) => (
                                   <li key={index} className="fix-item">
-                                    <span className="fix-icon">✓</span>
+                                    <span className="fix-icon"><Icon name="check" size={12} /></span>
                                     <span className="fix-text">{fix}</span>
                                   </li>
                                 ))}
@@ -1891,12 +1897,12 @@ function App() {
                           {errors.length > 0 && (
                             <>
                               <div className="fixes-dropdown-header errors-header">
-                                <span className="fixes-dropdown-title">🚫 Errors</span>
+                                <span className="fixes-dropdown-title"><Icon name="x" size={14} /> Errors</span>
                               </div>
                               <ul className="fixes-list errors-list">
                                 {errors.map((error, index) => (
                                   <li key={index} className="fix-item error-item">
-                                    <span className="fix-icon error-icon">✕</span>
+                                    <span className="fix-icon error-icon"><Icon name="x" size={12} /></span>
                                     <span className="fix-text">{error}</span>
                                   </li>
                                 ))}
@@ -1906,12 +1912,12 @@ function App() {
                           {warnings.length > 0 && (
                             <>
                               <div className="fixes-dropdown-header warnings-header">
-                                <span className="fixes-dropdown-title">⚠️ Warnings</span>
+                                <span className="fixes-dropdown-title"><Icon name="warning" size={14} /> Warnings</span>
                               </div>
                               <ul className="fixes-list warnings-list">
                                 {warnings.map((warning, index) => (
                                   <li key={index} className="fix-item warning-item">
-                                    <span className="fix-icon warning-icon">⚠</span>
+                                    <span className="fix-icon warning-icon"><Icon name="warning" size={12} /></span>
                                     <span className="fix-text">{warning}</span>
                                   </li>
                                 ))}
@@ -1934,14 +1940,14 @@ function App() {
                     onClick={handleCopyOutput}
                     disabled={!outputCode}
                   >
-                    📄 Copy
+                    <Icon name="copy" size={14} /> Copy
                   </button>
                   <button 
                     className="panel-btn" 
                     onClick={handleDownload}
                     disabled={!outputCode}
                   >
-                    ⬇️ Download
+                    <Icon name="download" size={14} /> Download
                   </button>
                   {/* Settings Dropdown */}
                   <div className="settings-dropdown-container" ref={settingsDropdownRef}>
@@ -1950,12 +1956,12 @@ function App() {
                       onClick={() => setShowSettings(!showSettings)}
                       title="Settings"
                     >
-                      ⚙️
+                      <Icon name="settings" size={14} />
                     </button>
                     {showSettings && (
                       <div className="settings-dropdown">
                         <div className="settings-dropdown-header">
-                          <span className="settings-dropdown-title">⚙️ Settings</span>
+                          <span className="settings-dropdown-title"><Icon name="settings" size={14} /> Settings</span>
                         </div>
                         <div className="settings-list">
                           <label className="settings-item">
@@ -1993,7 +1999,7 @@ function App() {
                   />
                 ) : (
                   <div className="empty-state">
-                    <div className="icon">{mode === 'json' ? '📦' : '📝'}</div>
+                    <div className="icon">{mode === 'json' ? <Icon name="json" size={48} /> : <Icon name="code" size={48} />}</div>
                     <h3>No output yet</h3>
                     <p>
                       {mode === 'json' 
@@ -2042,11 +2048,88 @@ function App() {
         <div className="status-center">
           Copyright (c) 2026 Ioannis E. Kosmadakis
         </div>
-        <div className="status-item">
-          {mode === 'json' 
-            ? (jsonSubMode === 'diff' ? 'JSON Diff' : 'JSON Format')
-            : (jsSubMode === 'visualize' ? 'Flow Visualization' : (jsSubMode === 'diff' ? 'Compare & Polish' : 'JavaScript / ServiceNow'))
-          }
+        <div className="status-right">
+          <div className="status-item">
+            {mode === 'json' 
+              ? (jsonSubMode === 'diff' ? 'JSON Diff' : 'JSON Format')
+              : (jsSubMode === 'visualize' ? 'Flow Visualization' : (jsSubMode === 'diff' ? 'Compare & Polish' : 'JavaScript / ServiceNow'))
+            }
+          </div>
+          <div className="mode-info-container" ref={modeInfoRef}>
+            <button 
+              className={`mode-info-btn ${showModeInfo ? 'active' : ''}`}
+              onClick={() => setShowModeInfo(!showModeInfo)}
+              title="Mode Information"
+            >
+              <Icon name="info" size={14} />
+            </button>
+            {showModeInfo && (
+              <div className="mode-info-dropdown">
+                <div className="mode-info-header">
+                  {mode === 'json' 
+                    ? (jsonSubMode === 'diff' ? <><Icon name="compare" size={16} /> JSON Diff Mode</> : <><Icon name="json" size={16} /> JSON Format Mode</>)
+                    : (jsSubMode === 'visualize' ? <><Icon name="flow" size={16} /> Flow Visualization</> : (jsSubMode === 'diff' ? <><Icon name="compare" size={16} /> Compare & Polish</> : <><Icon name="sparkles" size={16} /> Polish Mode</>))
+                  }
+                </div>
+                <div className="mode-info-content">
+                  {mode === 'json' && jsonSubMode !== 'diff' && (
+                    <>
+                      <p>Format and validate JSON with auto-fixes:</p>
+                      <ul>
+                        <li>Remove comments and trailing commas</li>
+                        <li>Convert single to double quotes</li>
+                        <li>Quote unquoted keys</li>
+                        <li>Detect duplicate keys and deep nesting</li>
+                      </ul>
+                    </>
+                  )}
+                  {mode === 'json' && jsonSubMode === 'diff' && (
+                    <>
+                      <p>Compare two JSON objects side by side:</p>
+                      <ul>
+                        <li>Visual diff with color-coded changes</li>
+                        <li>Statistics for additions, deletions, modifications</li>
+                        <li>Swap button to reverse comparison</li>
+                      </ul>
+                    </>
+                  )}
+                  {mode === 'js' && jsSubMode === 'polish' && (
+                    <>
+                      <p>Format and analyze ServiceNow scripts:</p>
+                      <ul>
+                        <li>Prettier formatting with SN-friendly settings</li>
+                        <li>Auto-fix typos and common mistakes</li>
+                        <li>Performance and security warnings</li>
+                        <li>Best practice suggestions</li>
+                      </ul>
+                    </>
+                  )}
+                  {mode === 'js' && jsSubMode === 'diff' && (
+                    <>
+                      <p>Compare and polish JavaScript side by side:</p>
+                      <ul>
+                        <li>Visual diff with Monaco DiffEditor</li>
+                        <li>Polish revised code while keeping original</li>
+                        <li>Toggle highlighting on/off</li>
+                        <li>Download both versions</li>
+                      </ul>
+                    </>
+                  )}
+                  {mode === 'js' && jsSubMode === 'visualize' && (
+                    <>
+                      <p>Generate interactive flow diagrams:</p>
+                      <ul>
+                        <li>Visualize control flow and logic</li>
+                        <li>ServiceNow-aware parsing</li>
+                        <li>Click nodes to see code details</li>
+                        <li>Toggle between Full Ops and Logic view</li>
+                      </ul>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </footer>
 

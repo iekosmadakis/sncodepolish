@@ -109,7 +109,7 @@ export function analyzeGenericWarnings(code) {
     credentialCount += matches.length;
   });
   if (credentialCount > 0) {
-    warnings.push(`⚠️ ${credentialCount} potential hardcoded credential${credentialCount > 1 ? 's' : ''} detected - security risk!`);
+    warnings.push(`${credentialCount} potential hardcoded credential${credentialCount > 1 ? 's' : ''} detected - security risk!`);
   }
 
   return warnings;
