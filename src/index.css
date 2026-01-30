@@ -1213,6 +1213,10 @@ body {
   justify-content: center;
 }
 
+.settings-btn .icon-svg {
+  margin-right: 0;
+}
+
 .settings-dropdown {
   position: absolute;
   top: calc(100% + 8px);
