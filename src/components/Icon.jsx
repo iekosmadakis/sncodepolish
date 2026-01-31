@@ -361,6 +361,67 @@ const icons = {
   ),
 
   /**
+   * Terminal/Development - Used for development mode
+   */
+  terminal: (
+    <>
+      <rect 
+        x="2" y="4" width="20" height="16" rx="2" 
+        fill="none" 
+        stroke="currentColor" 
+        strokeWidth="1.5"
+      />
+      <path 
+        d="M6 9L9 12L6 15" 
+        fill="none" 
+        stroke="currentColor" 
+        strokeWidth="1.5" 
+        strokeLinecap="round" 
+        strokeLinejoin="round"
+      />
+      <path 
+        d="M12 15H18" 
+        stroke="currentColor" 
+        strokeWidth="1.5" 
+        strokeLinecap="round"
+      />
+    </>
+  ),
+
+  /**
+   * Clipboard/Plan - Used for plan mode
+   */
+  plan: (
+    <>
+      <path 
+        d="M9 5H7C5.89543 5 5 5.89543 5 7V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V7C19 5.89543 18.1046 5 17 5H15" 
+        fill="none" 
+        stroke="currentColor" 
+        strokeWidth="1.5" 
+        strokeLinecap="round"
+      />
+      <rect 
+        x="9" y="3" width="6" height="4" rx="1" 
+        fill="none" 
+        stroke="currentColor" 
+        strokeWidth="1.5"
+      />
+      <path 
+        d="M9 12H15" 
+        stroke="currentColor" 
+        strokeWidth="1.5" 
+        strokeLinecap="round"
+      />
+      <path 
+        d="M9 16H13" 
+        stroke="currentColor" 
+        strokeWidth="1.5" 
+        strokeLinecap="round"
+      />
+    </>
+  ),
+
+  /**
    * Swap - Used for swap/reverse actions
    */
   swap: (
@@ -404,7 +465,6 @@ function Icon({ name, size = 16, className = '' }) {
   const iconContent = icons[name];
   
   if (!iconContent) {
-    console.warn(`Icon "${name}" not found`);
     return null;
   }
 

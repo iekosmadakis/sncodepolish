@@ -138,11 +138,52 @@ body {
   background-clip: text;
 }
 
-.header-subtitle {
+
+/* App Mode Toggle (Plan / Development) - Main app switch */
+.app-mode-toggle {
+  display: flex;
+  align-items: center;
+  background: linear-gradient(135deg, rgba(0, 212, 170, 0.06) 0%, rgba(124, 58, 237, 0.06) 100%);
+  border-radius: 10px;
+  padding: 4px;
+  gap: 4px;
+  border: 1px solid rgba(0, 212, 170, 0.2);
+  box-shadow: 0 0 16px rgba(0, 212, 170, 0.06);
+}
+
+.app-mode-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.app-mode-btn:hover {
   color: var(--text-secondary);
-  font-size: 14px;
-  padding-left: 16px;
-  border-left: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.app-mode-btn.active {
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 12px rgba(0, 212, 170, 0.1);
+}
+
+.app-mode-btn.active .icon-svg {
+  color: var(--accent-primary);
+}
+
+.app-mode-btn .icon-svg {
+  transition: color 0.2s ease;
 }
 
 /* Polish Button */
@@ -315,6 +356,11 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.status-description {
+  color: var(--text-secondary);
+  font-weight: 500;
 }
 
 /* Mode Info Dropdown */
@@ -759,6 +805,63 @@ body {
   line-height: 1.5;
 }
 
+/* Plan Mode Placeholder */
+.plan-mode-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  text-align: center;
+  padding: 40px;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.03) 0%, rgba(0, 212, 170, 0.03) 100%);
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.plan-mode-icon {
+  width: 120px;
+  height: 120px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, var(--bg-elevated) 0%, var(--bg-tertiary) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.plan-mode-icon .icon-svg {
+  color: var(--accent-secondary);
+  opacity: 0.6;
+}
+
+.plan-mode-placeholder h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+.plan-mode-placeholder p {
+  font-size: 15px;
+  color: var(--text-muted);
+  max-width: 400px;
+  line-height: 1.6;
+}
+
 /* Keyboard shortcut hint */
 .shortcut-hint {
   display: flex;
@@ -898,10 +1001,6 @@ body {
   
   .mode-btn {
     padding: 8px 12px;
-  }
-  
-  .header-subtitle {
-    display: none;
   }
 }
 

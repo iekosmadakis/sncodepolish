@@ -250,7 +250,10 @@ function computeLineDiff(original, formatted) {
 // =============================================================================
 
 function App() {
-  // Mode state
+  // Top-level app mode: 'plan' or 'development'
+  const [appMode, setAppMode] = useState('plan');
+  
+  // Development mode state
   const [mode, setMode] = useState('javascript');
   const [jsonSubMode, setJsonSubMode] = useState('format');
   const [jsSubMode, setJsSubMode] = useState('format'); // 'format', 'diff', or 'visualize'
@@ -1102,85 +1105,108 @@ function App() {
             </div>
             <span className="logo-text">GlideAware Studio</span>
           </div>
-          <span className="header-subtitle">
-            {mode === 'json' ? 'JSON Formatter & Validator' : 'Script Analysis & Refinement'}
-          </span>
+          
+          {/* Top-level App Mode Toggle */}
+          <div className="app-mode-toggle">
+            <button
+              className={`app-mode-btn ${appMode === 'plan' ? 'active' : ''}`}
+              onClick={() => setAppMode('plan')}
+              title="Plan Mode"
+            >
+              <Icon name="plan" size={16} />
+              <span>Plan</span>
+            </button>
+            <button
+              className={`app-mode-btn ${appMode === 'development' ? 'active' : ''}`}
+              onClick={() => setAppMode('development')}
+              title="Development Mode"
+            >
+              <Icon name="terminal" size={16} />
+              <span>Develop</span>
+            </button>
+          </div>
         </div>
 
         <div className="header-center">
-          {/* Mode Toggle */}
-          <div className="mode-toggle">
-            <button
-              className={`mode-btn ${mode === 'javascript' ? 'active' : ''}`}
-              onClick={() => handleModeToggle('javascript')}
-              title="JavaScript / ServiceNow Mode"
-            >
-              <span className="mode-icon">JS</span>
-              <span className="mode-label">JavaScript</span>
-            </button>
-            <button
-              className={`mode-btn ${mode === 'json' ? 'active' : ''}`}
-              onClick={() => handleModeToggle('json')}
-              title="JSON Mode"
-            >
-              <span className="mode-icon">{'{}'}</span>
-              <span className="mode-label">JSON</span>
-            </button>
-          </div>
-          
-          {/* Sub-mode Toggle */}
-          {mode === 'json' && (
-            <div className="sub-mode-toggle">
-              <button
-                className={`sub-mode-btn ${jsonSubMode === 'format' ? 'active' : ''}`}
-                onClick={() => handleJsonSubModeToggle('format')}
-                title="Format & Validate JSON"
-              >
-                <Icon name="sparkles" size={14} /> Format
-              </button>
-              <button
-                className={`sub-mode-btn ${jsonSubMode === 'diff' ? 'active' : ''}`}
-                onClick={() => handleJsonSubModeToggle('diff')}
-                title="Compare two JSON objects"
-              >
-                <Icon name="compare" size={14} /> Compare
-              </button>
-            </div>
-          )}
-          {mode === 'javascript' && (
-            <div className="sub-mode-toggle">
-              <button
-                className={`sub-mode-btn ${jsSubMode === 'format' ? 'active' : ''}`}
-                onClick={() => handleJsSubModeToggle('format')}
-                title="Format & Polish Code"
-              >
-                <Icon name="sparkles" size={14} /> Polish
-              </button>
-              <button
-                className={`sub-mode-btn ${jsSubMode === 'diff' ? 'active' : ''}`}
-                onClick={() => handleJsSubModeToggle('diff')}
-                title="Compare two code snippets"
-              >
-                <Icon name="compare" size={14} /> Compare
-              </button>
-              <button
-                className={`sub-mode-btn ${jsSubMode === 'visualize' ? 'active' : ''}`}
-                onClick={() => handleJsSubModeToggle('visualize')}
-                title="Visualize code flow"
-              >
-                <Icon name="flow" size={14} /> Visualize
-              </button>
-            </div>
+          {appMode === 'development' && (
+            <>
+              {/* Mode Toggle */}
+              <div className="mode-toggle">
+                <button
+                  className={`mode-btn ${mode === 'javascript' ? 'active' : ''}`}
+                  onClick={() => handleModeToggle('javascript')}
+                  title="JavaScript / ServiceNow Mode"
+                >
+                  <span className="mode-icon">JS</span>
+                  <span className="mode-label">JavaScript</span>
+                </button>
+                <button
+                  className={`mode-btn ${mode === 'json' ? 'active' : ''}`}
+                  onClick={() => handleModeToggle('json')}
+                  title="JSON Mode"
+                >
+                  <span className="mode-icon">{'{}'}</span>
+                  <span className="mode-label">JSON</span>
+                </button>
+              </div>
+              
+              {/* Sub-mode Toggle */}
+              {mode === 'json' && (
+                <div className="sub-mode-toggle">
+                  <button
+                    className={`sub-mode-btn ${jsonSubMode === 'format' ? 'active' : ''}`}
+                    onClick={() => handleJsonSubModeToggle('format')}
+                    title="Format & Validate JSON"
+                  >
+                    <Icon name="sparkles" size={14} /> Format
+                  </button>
+                  <button
+                    className={`sub-mode-btn ${jsonSubMode === 'diff' ? 'active' : ''}`}
+                    onClick={() => handleJsonSubModeToggle('diff')}
+                    title="Compare two JSON objects"
+                  >
+                    <Icon name="compare" size={14} /> Compare
+                  </button>
+                </div>
+              )}
+              {mode === 'javascript' && (
+                <div className="sub-mode-toggle">
+                  <button
+                    className={`sub-mode-btn ${jsSubMode === 'format' ? 'active' : ''}`}
+                    onClick={() => handleJsSubModeToggle('format')}
+                    title="Format & Polish Code"
+                  >
+                    <Icon name="sparkles" size={14} /> Polish
+                  </button>
+                  <button
+                    className={`sub-mode-btn ${jsSubMode === 'diff' ? 'active' : ''}`}
+                    onClick={() => handleJsSubModeToggle('diff')}
+                    title="Compare two code snippets"
+                  >
+                    <Icon name="compare" size={14} /> Compare
+                  </button>
+                  <button
+                    className={`sub-mode-btn ${jsSubMode === 'visualize' ? 'active' : ''}`}
+                    onClick={() => handleJsSubModeToggle('visualize')}
+                    title="Visualize code flow"
+                  >
+                    <Icon name="flow" size={14} /> Visualize
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
 
         <div className="header-right">
-          <div className="shortcut-hint">
-            <span className="kbd">Ctrl</span>
-            <span>+</span>
-            <span className="kbd">Enter</span>
-          </div>
-          {mode === 'json' && jsonSubMode === 'diff' ? (
+          {appMode === 'development' && (
+            <>
+              <div className="shortcut-hint">
+                <span className="kbd">Ctrl</span>
+                <span>+</span>
+                <span className="kbd">Enter</span>
+              </div>
+              {mode === 'json' && jsonSubMode === 'diff' ? (
             <button 
               className="polish-btn compare-btn" 
               onClick={handleCompareJson}
@@ -1253,12 +1279,23 @@ function App() {
               )}
             </button>
           )}
+            </>
+          )}
         </div>
       </header>
 
       {/* Main Content */}
       <main className="main-content">
-        {mode === 'javascript' && jsSubMode === 'visualize' ? (
+        {appMode === 'plan' ? (
+          /* Plan Mode - Empty Placeholder */
+          <div className="plan-mode-placeholder">
+            <div className="plan-mode-icon">
+              <Icon name="plan" size={64} />
+            </div>
+            <h2>Plan Mode</h2>
+            <p>Coming soon. This mode will help you plan and organize your ServiceNow development work.</p>
+          </div>
+        ) : mode === 'javascript' && jsSubMode === 'visualize' ? (
           /* JavaScript Visualize View */
           <div className="visualize-layout">
             {/* Code Editor Panel */}
@@ -2049,10 +2086,14 @@ function App() {
           Copyright (c) 2026 Ioannis E. Kosmadakis
         </div>
         <div className="status-right">
-          <div className="status-item">
-            {mode === 'json' 
-              ? (jsonSubMode === 'diff' ? 'JSON Diff' : 'JSON Format')
-              : (jsSubMode === 'visualize' ? 'Flow Visualization' : (jsSubMode === 'diff' ? 'Compare & Polish' : 'JavaScript / ServiceNow'))
+          <div className="status-item status-description">
+            {appMode === 'plan' 
+              ? 'Planning & Organization'
+              : mode === 'json' 
+                ? (jsonSubMode === 'diff' ? 'JSON Comparison & Analysis' : 'JSON Formatter & Validator')
+                : (jsSubMode === 'visualize' 
+                    ? 'Code Flow Visualization' 
+                    : (jsSubMode === 'diff' ? 'Script Comparison & Polish' : 'Script Analysis & Refinement'))
             }
           </div>
           <div className="mode-info-container" ref={modeInfoRef}>
