@@ -449,6 +449,54 @@ const icons = {
         strokeLinejoin="round"
       />
     </>
+  ),
+
+  /**
+   * Plus - Used for add/create actions
+   */
+  plus: (
+    <>
+      <path 
+        d="M12 5V19" 
+        stroke="currentColor" 
+        strokeWidth="2" 
+        strokeLinecap="round"
+      />
+      <path 
+        d="M5 12H19" 
+        stroke="currentColor" 
+        strokeWidth="2" 
+        strokeLinecap="round"
+      />
+    </>
+  ),
+
+  /**
+   * Chevron Right - Used for expand/collapse
+   */
+  chevronRight: (
+    <path 
+      d="M9 6L15 12L9 18" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+    />
+  ),
+
+  /**
+   * Chevron Left - Used for collapse/back
+   */
+  chevronLeft: (
+    <path 
+      d="M15 6L9 12L15 18" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+    />
   )
 };
 

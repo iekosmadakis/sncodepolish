@@ -1,8 +1,81 @@
 # GlideAware Studio
 
-A client-side web application for formatting, polishing, and comparing ServiceNow JavaScript code and JSON. All processing happens in the browser - your code never leaves your machine.
+A client-side web application for ServiceNow development. Features code formatting, task management, note-taking, and visual planning - all running offline in your browser. Your data never leaves your machine.
 
-## Features
+## App Modes
+
+GlideAware Studio provides two primary modes accessible via the top-level toggle:
+
+| Mode | Description |
+|------|-------------|
+| **Plan** | Task management, note-taking, and sketching for project planning |
+| **Develop** | Code formatting, comparison, and visualization for JavaScript/JSON |
+
+---
+
+## 📋 Plan Mode
+
+Plan mode provides offline-first project management tools with automatic data persistence via IndexedDB.
+
+### Tasks (Kanban Board)
+
+A full-featured Kanban board for managing development tasks:
+
+| Feature | Description |
+|---------|-------------|
+| **Drag & Drop** | Move tasks between columns by dragging |
+| **Columns** | To Do, In Progress, On Hold, In Review, Completed |
+| **Backlog** | Collapsible sidebar for backlog items |
+| **Priorities** | Low, Medium, High, Critical with color coding |
+| **External Links** | Link tasks to Jira, ServiceNow, Monday, ClickUp, Asana, or custom URLs |
+| **Tags** | Organize tasks with custom tags |
+| **Auto-save** | Every change persists instantly to IndexedDB |
+
+### Notes (Docs)
+
+Rich text note-taking with markdown support:
+
+| Feature | Description |
+|---------|-------------|
+| **Markdown Toolbar** | Bold, italic, headings, lists, checklists, code blocks, links, quotes |
+| **Search** | Filter notes by title or content |
+| **Auto-save** | Debounced saving with visual indicator |
+| **Sidebar Navigation** | Quick access to all notes with previews |
+
+### Notes (Sketch)
+
+Canvas-based drawing tool for diagrams and visual notes:
+
+| Feature | Description |
+|---------|-------------|
+| **Drawing Tools** | Pen, Line, Rectangle, Ellipse, Arrow, Eraser |
+| **Color Palette** | 9 preset colors |
+| **Stroke Widths** | 4 size options |
+| **Multiple Sketches** | Create and manage multiple drawings |
+| **Grid Background** | Visual alignment guide |
+
+### Data Persistence
+
+All Plan mode data is stored in IndexedDB and persists across:
+- Tab close
+- Browser close
+- Computer restart
+- Power off
+
+### Export / Import
+
+| Action | Description |
+|--------|-------------|
+| **Export** | Download all Plan data as JSON (`glideaware-plan-YYYY-MM-DD-HHMMSS.json`) |
+| **Import** | Load Plan data from a previously exported JSON file |
+
+Use export/import to transfer your planning data between computers or create backups.
+
+---
+
+## 💻 Develop Mode
+
+Develop mode provides tools for ServiceNow JavaScript and JSON development.
 
 ### 🔀 Dual Mode Support
 Switch between **JavaScript** (ServiceNow) and **JSON** modes with one click. Each mode provides:
@@ -288,15 +361,40 @@ After building, the `dist/` folder contains static files that can be deployed to
 
 ## 📖 Usage
 
-### Polish Mode
-1. Select mode: **JavaScript** or **JSON** using the toggle
-2. Paste your code/JSON in the **Original Code** panel (left)
-3. Click **Polish Code/JSON** or press `Ctrl+Enter`
-4. View formatted output in the **Polished Code** panel (right) with highlighted changes
-5. Click the fixes/warnings badge to see details
-6. Click **Copy** or **Download** to export the polished output
+### Plan Mode - Tasks
+1. Click **Plan** in the top-level toggle
+2. Select **Tasks** to open the Kanban board
+3. Create tasks by clicking the **+** button on any column
+4. Drag tasks between columns to update status
+5. Click a task to edit details, add links, tags, and description
+6. Use the collapsible **Backlog** sidebar for items not yet in progress
+7. Click **Export** to save all Plan data as JSON
 
-### Compare Mode (JavaScript)
+### Plan Mode - Notes (Docs)
+1. Click **Plan** → **Notes** → **Docs**
+2. Create a new note using the **+** button
+3. Use the markdown toolbar for formatting (bold, italic, code, checklists, etc.)
+4. Notes save automatically as you type
+5. Search notes using the sidebar search box
+
+### Plan Mode - Notes (Sketch)
+1. Click **Plan** → **Notes** → **Sketch**
+2. Create a new sketch using the **+** button
+3. Select a drawing tool from the toolbar
+4. Choose color and stroke width
+5. Draw on the canvas - changes save automatically
+6. Use **Clear** to reset the canvas
+
+### Develop Mode - Polish
+1. Click **Develop** in the top-level toggle
+2. Select mode: **JavaScript** or **JSON** using the toggle
+3. Paste your code/JSON in the **Original Code** panel (left)
+4. Click **Polish Code/JSON** or press `Ctrl+Enter`
+5. View formatted output in the **Polished Code** panel (right) with highlighted changes
+6. Click the fixes/warnings badge to see details
+7. Click **Copy** or **Download** to export the polished output
+
+### Develop Mode - Compare (JavaScript)
 1. Select **JavaScript** mode and click **Compare**
 2. Enter original code on the left and revised code on the right
 3. See real-time visual diff highlighting
@@ -304,13 +402,13 @@ After building, the `dist/` folder contains static files that can be deployed to
 5. Toggle highlighting on/off as needed
 6. Click **Download** to save both files
 
-### Compare Mode (JSON)
+### Develop Mode - Compare (JSON)
 1. Select **JSON** mode and click **Compare**
 2. Enter original JSON on the left and modified JSON on the right
 3. Click **Compare JSON** to see the visual difference breakdown
 4. Use the swap button to reverse comparison direction
 
-### Visualize Mode (JavaScript)
+### Develop Mode - Visualize (JavaScript)
 1. Select **JavaScript** mode and click **Visualize**
 2. Paste your ServiceNow code in the editor (or click **Load Sample**)
 3. Click **Generate Flow** or press `Ctrl+Enter`
@@ -335,6 +433,7 @@ After building, the `dist/` folder contains static files that can be deployed to
 | React Flow | 11.x | Interactive flow diagrams |
 | Acorn | 8.x | JavaScript AST parsing |
 | jsondiffpatch | 0.7.x | JSON comparison and diff |
+| IndexedDB | Native | Offline data persistence (Plan mode) |
 
 ## Project Structure
 
@@ -344,11 +443,18 @@ src/
 ├── index.css                  # Application styles
 ├── main.jsx                   # React entry point
 ├── components/
-│   └── FlowNode.jsx           # Custom React Flow node component
+│   ├── FlowNode.jsx           # Custom React Flow node component
+│   ├── Icon.jsx               # SVG icon library component
+│   └── Plan/
+│       ├── TaskBoard.jsx      # Kanban board for task management
+│       ├── NoteEditor.jsx     # Rich text note editor (Docs)
+│       └── DrawingCanvas.jsx  # Canvas-based drawing tool (Sketch)
 └── utils/
     ├── codePolish.js          # Main orchestrator (JS + JSON)
     ├── astParser.js           # JavaScript AST parsing & control flow extraction
     ├── flowGenerator.js       # React Flow diagram generation
+    ├── storage/
+    │   └── planStorage.js     # IndexedDB persistence for Plan mode
     ├── fixes/
     │   ├── genericFixes.js         # Generic JavaScript fixes
     │   ├── servicenowFixes.js      # ServiceNow-specific fixes

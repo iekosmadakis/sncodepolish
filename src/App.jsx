@@ -19,6 +19,15 @@ import { parseCode, extractControlFlow } from './utils/astParser';
 import { generateFlowDiagram, getFlowStats } from './utils/flowGenerator';
 import FlowNode from './components/FlowNode';
 import Icon from './components/Icon';
+import TaskBoard from './components/Plan/TaskBoard';
+import NoteEditor from './components/Plan/NoteEditor';
+import DrawingCanvas from './components/Plan/DrawingCanvas';
+import {
+  exportAllData,
+  importData,
+  generateExportFilename,
+  downloadAsJson
+} from './utils/storage/planStorage';
 import { diff } from 'jsondiffpatch';
 import * as htmlFormatter from 'jsondiffpatch/formatters/html';
 import 'jsondiffpatch/formatters/styles/html.css';
@@ -253,6 +262,14 @@ function App() {
   // Top-level app mode: 'plan' or 'development'
   const [appMode, setAppMode] = useState('plan');
   
+  // Plan mode state
+  const [planSubMode, setPlanSubMode] = useState('tasks'); // 'tasks' or 'notes'
+  const [notesSubMode, setNotesSubMode] = useState('docs'); // 'docs' or 'sketch'
+  const fileInputRef = useRef(null);
+  const taskBoardRef = useRef(null);
+  const noteEditorRef = useRef(null);
+  const drawingCanvasRef = useRef(null);
+  
   // Development mode state
   const [mode, setMode] = useState('javascript');
   const [jsonSubMode, setJsonSubMode] = useState('format');
@@ -306,6 +323,52 @@ function App() {
     setToast({ show: true, message, type });
     setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
   }, []);
+
+  // -------------------------------------------------------------------------
+  // Plan Mode Handlers
+  // -------------------------------------------------------------------------
+
+  /**
+   * Exports all Plan mode data as JSON file
+   */
+  const handleExportPlanData = useCallback(async () => {
+    try {
+      const data = await exportAllData();
+      const filename = generateExportFilename();
+      downloadAsJson(data, filename);
+      showToast('Plan data exported successfully', 'success');
+    } catch (error) {
+      showToast('Failed to export data', 'error');
+    }
+  }, [showToast]);
+
+  /**
+   * Imports Plan mode data from JSON file
+   */
+  const handleImportPlanData = useCallback(async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      const summary = await importData(data, true);
+      showToast(
+        `Imported: ${summary.tasks} tasks, ${summary.notes} notes, ${summary.drawings} sketches`,
+        'success'
+      );
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      // Force re-render by toggling sub-mode
+      const currentSubMode = planSubMode;
+      setPlanSubMode('');
+      setTimeout(() => setPlanSubMode(currentSubMode), 0);
+    } catch (error) {
+      showToast('Failed to import data: Invalid file format', 'error');
+    }
+  }, [showToast, planSubMode]);
 
   // Compare two JSON objects
   const handleCompareJson = useCallback(() => {
@@ -1128,6 +1191,49 @@ function App() {
         </div>
 
         <div className="header-center">
+          {appMode === 'plan' && (
+            <>
+              {/* Plan Sub-mode Toggle */}
+              <div className="mode-toggle">
+                <button
+                  className={`mode-btn ${planSubMode === 'tasks' ? 'active' : ''}`}
+                  onClick={() => setPlanSubMode('tasks')}
+                  title="Tasks - Kanban Board"
+                >
+                  <span className="mode-icon"><Icon name="clipboard" size={14} /></span>
+                  <span className="mode-label">Tasks</span>
+                </button>
+                <button
+                  className={`mode-btn ${planSubMode === 'notes' ? 'active' : ''}`}
+                  onClick={() => setPlanSubMode('notes')}
+                  title="Notes & Sketches"
+                >
+                  <span className="mode-icon"><Icon name="sparkles" size={14} /></span>
+                  <span className="mode-label">Notes</span>
+                </button>
+              </div>
+              
+              {/* Notes Sub-mode Toggle */}
+              {planSubMode === 'notes' && (
+                <div className="sub-mode-toggle">
+                  <button
+                    className={`sub-mode-btn ${notesSubMode === 'docs' ? 'active' : ''}`}
+                    onClick={() => setNotesSubMode('docs')}
+                    title="Rich Text Notes"
+                  >
+                    <Icon name="code" size={14} /> Docs
+                  </button>
+                  <button
+                    className={`sub-mode-btn ${notesSubMode === 'sketch' ? 'active' : ''}`}
+                    onClick={() => setNotesSubMode('sketch')}
+                    title="Drawing Canvas"
+                  >
+                    <Icon name="flow" size={14} /> Sketch
+                  </button>
+                </div>
+              )}
+            </>
+          )}
           {appMode === 'development' && (
             <>
               {/* Mode Toggle */}
@@ -1199,6 +1305,47 @@ function App() {
         </div>
 
         <div className="header-right">
+          {appMode === 'plan' && (
+            <>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImportPlanData}
+                accept=".json"
+                style={{ display: 'none' }}
+              />
+              <button 
+                className="panel-btn"
+                onClick={() => fileInputRef.current?.click()}
+                title="Import Plan Data"
+              >
+                <Icon name="download" size={14} /> Import
+              </button>
+              <button 
+                className="panel-btn"
+                onClick={handleExportPlanData}
+                title="Export Plan Data"
+              >
+                <Icon name="copy" size={14} /> Export
+              </button>
+              <button 
+                className="polish-btn"
+                onClick={() => {
+                  if (planSubMode === 'tasks') {
+                    taskBoardRef.current?.createTask();
+                  } else if (notesSubMode === 'docs') {
+                    noteEditorRef.current?.createNote();
+                  } else {
+                    drawingCanvasRef.current?.createDrawing();
+                  }
+                }}
+                title={planSubMode === 'tasks' ? 'Create New Task' : (notesSubMode === 'docs' ? 'Create New Note' : 'Create New Sketch')}
+              >
+                <span className="icon"><Icon name="sparkles" size={16} /></span>
+                {planSubMode === 'tasks' ? 'New Task' : (notesSubMode === 'docs' ? 'New Note' : 'New Sketch')}
+              </button>
+            </>
+          )}
           {appMode === 'development' && (
             <>
               <div className="shortcut-hint">
@@ -1287,13 +1434,17 @@ function App() {
       {/* Main Content */}
       <main className="main-content">
         {appMode === 'plan' ? (
-          /* Plan Mode - Empty Placeholder */
-          <div className="plan-mode-placeholder">
-            <div className="plan-mode-icon">
-              <Icon name="plan" size={64} />
-            </div>
-            <h2>Plan Mode</h2>
-            <p>Coming soon. This mode will help you plan and organize your ServiceNow development work.</p>
+          /* Plan Mode */
+          <div className="plan-mode-content">
+            {planSubMode === 'tasks' ? (
+              <TaskBoard ref={taskBoardRef} onToast={showToast} />
+            ) : planSubMode === 'notes' ? (
+              notesSubMode === 'docs' ? (
+                <NoteEditor ref={noteEditorRef} onToast={showToast} />
+              ) : (
+                <DrawingCanvas ref={drawingCanvasRef} onToast={showToast} />
+              )
+            ) : null}
           </div>
         ) : mode === 'javascript' && jsSubMode === 'visualize' ? (
           /* JavaScript Visualize View */
@@ -1839,7 +1990,7 @@ function App() {
               <div className="diff-result-container">
                 {diffStats?.identical ? (
                   <div className="empty-state identical-state">
-                    <div className="icon">✅</div>
+                    <div className="icon"><Icon name="check" size={48} /></div>
                     <h3>JSONs are identical</h3>
                     <p>No differences found between the two JSON objects.</p>
                   </div>
@@ -2088,7 +2239,9 @@ function App() {
         <div className="status-right">
           <div className="status-item status-description">
             {appMode === 'plan' 
-              ? 'Planning & Organization'
+              ? (planSubMode === 'tasks' 
+                  ? 'Task Management & Kanban'
+                  : (notesSubMode === 'docs' ? 'Notes & Documentation' : 'Sketches & Diagrams'))
               : mode === 'json' 
                 ? (jsonSubMode === 'diff' ? 'JSON Comparison & Analysis' : 'JSON Formatter & Validator')
                 : (jsSubMode === 'visualize' 
@@ -2107,14 +2260,87 @@ function App() {
             {showModeInfo && (
               <div className="mode-info-dropdown">
                 <div className="mode-info-header">
-                  {mode === 'json' 
-                    ? (jsonSubMode === 'diff' ? <><Icon name="compare" size={14} /> JSON Diff</> : <><Icon name="json" size={14} /> JSON Format</>)
-                    : (jsSubMode === 'visualize' ? <><Icon name="flow" size={14} /> Flow Visualization</> : (jsSubMode === 'diff' ? <><Icon name="compare" size={14} /> Compare & Polish</> : <><Icon name="sparkles" size={14} /> Polish Mode</>))
+                  {appMode === 'plan' 
+                    ? (planSubMode === 'tasks' 
+                        ? <><Icon name="clipboard" size={14} /> Task Management</>
+                        : (notesSubMode === 'docs' 
+                            ? <><Icon name="code" size={14} /> Notes & Docs</>
+                            : <><Icon name="flow" size={14} /> Sketches</>))
+                    : mode === 'json' 
+                      ? (jsonSubMode === 'diff' ? <><Icon name="compare" size={14} /> JSON Diff</> : <><Icon name="json" size={14} /> JSON Format</>)
+                      : (jsSubMode === 'visualize' ? <><Icon name="flow" size={14} /> Flow Visualization</> : (jsSubMode === 'diff' ? <><Icon name="compare" size={14} /> Compare & Polish</> : <><Icon name="sparkles" size={14} /> Polish Mode</>))
                   }
                 </div>
                 <div className="mode-info-content">
+                  {/* Plan Mode - Tasks */}
+                  {appMode === 'plan' && planSubMode === 'tasks' && (
+                    <>
+                      <div className="mode-info-section">
+                        <div className="mode-info-section-title">Kanban Board</div>
+                        <ul>
+                          <li>Drag & drop tasks between columns</li>
+                          <li>Columns: To Do, In Progress, On Hold, In Review, Completed</li>
+                          <li>Collapsible Backlog for future items</li>
+                          <li>Priority levels with color coding</li>
+                        </ul>
+                      </div>
+                      <div className="mode-info-section">
+                        <div className="mode-info-section-title">Task Details</div>
+                        <ul>
+                          <li>Title, description, and tags</li>
+                          <li>Link to external systems (Jira, ServiceNow, etc.)</li>
+                          <li>All changes auto-save to IndexedDB</li>
+                        </ul>
+                      </div>
+                    </>
+                  )}
+                  {/* Plan Mode - Notes (Docs) */}
+                  {appMode === 'plan' && planSubMode === 'notes' && notesSubMode === 'docs' && (
+                    <>
+                      <div className="mode-info-section">
+                        <div className="mode-info-section-title">Rich Text Editor</div>
+                        <ul>
+                          <li>Markdown support for formatting</li>
+                          <li>Bold, italic, headings, lists</li>
+                          <li>Code blocks and inline code</li>
+                          <li>Checklists and quotes</li>
+                        </ul>
+                      </div>
+                      <div className="mode-info-section">
+                        <div className="mode-info-section-title">Organization</div>
+                        <ul>
+                          <li>Search notes by title or content</li>
+                          <li>Auto-save with debounced persistence</li>
+                          <li>Notes stored locally in IndexedDB</li>
+                        </ul>
+                      </div>
+                    </>
+                  )}
+                  {/* Plan Mode - Notes (Sketch) */}
+                  {appMode === 'plan' && planSubMode === 'notes' && notesSubMode === 'sketch' && (
+                    <>
+                      <div className="mode-info-section">
+                        <div className="mode-info-section-title">Drawing Tools</div>
+                        <ul>
+                          <li>Pen, Line, Rectangle, Ellipse, Arrow</li>
+                          <li>9 color options</li>
+                          <li>4 stroke width settings</li>
+                          <li>Eraser for corrections</li>
+                        </ul>
+                      </div>
+                      <div className="mode-info-section">
+                        <div className="mode-info-section-title">Canvas Features</div>
+                        <ul>
+                          <li>Multiple sketches with sidebar navigation</li>
+                          <li>Grid background for alignment</li>
+                          <li>Auto-save drawings to IndexedDB</li>
+                          <li>Clear canvas to start fresh</li>
+                        </ul>
+                      </div>
+                    </>
+                  )}
                   {/* JSON Format Mode */}
-                  {mode === 'json' && jsonSubMode !== 'diff' && (
+                  {appMode === 'development' && mode === 'json' && jsonSubMode !== 'diff' && (
                     <>
                       <div className="mode-info-section">
                         <div className="mode-info-section-title">Auto-Fixes</div>
@@ -2139,7 +2365,7 @@ function App() {
                     </>
                   )}
                   {/* JSON Diff Mode */}
-                  {mode === 'json' && jsonSubMode === 'diff' && (
+                  {appMode === 'development' && mode === 'json' && jsonSubMode === 'diff' && (
                     <div className="mode-info-section">
                       <div className="mode-info-section-title">Features</div>
                       <ul>
@@ -2152,7 +2378,7 @@ function App() {
                     </div>
                   )}
                   {/* JavaScript Polish Mode */}
-                  {mode === 'javascript' && jsSubMode === 'format' && (
+                  {appMode === 'development' && mode === 'javascript' && jsSubMode === 'format' && (
                     <>
                       <div className="mode-info-section">
                         <div className="mode-info-section-title">Formatting</div>
@@ -2183,7 +2409,7 @@ function App() {
                     </>
                   )}
                   {/* JavaScript Compare Mode */}
-                  {mode === 'javascript' && jsSubMode === 'diff' && (
+                  {appMode === 'development' && mode === 'javascript' && jsSubMode === 'diff' && (
                     <div className="mode-info-section">
                       <div className="mode-info-section-title">Features</div>
                       <ul>
@@ -2197,7 +2423,7 @@ function App() {
                     </div>
                   )}
                   {/* JavaScript Visualize Mode */}
-                  {mode === 'javascript' && jsSubMode === 'visualize' && (
+                  {appMode === 'development' && mode === 'javascript' && jsSubMode === 'visualize' && (
                     <>
                       <div className="mode-info-section">
                         <div className="mode-info-section-title">Flow Diagrams</div>
