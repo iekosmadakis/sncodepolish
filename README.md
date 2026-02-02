@@ -48,7 +48,7 @@ Canvas-based drawing tool for diagrams and visual notes:
 
 | Feature | Description |
 |---------|-------------|
-| **Drawing Tools** | Text, Pen, Line, Rectangle, Ellipse, Arrow, Eraser |
+| **Drawing Tools** | Text (click to add labels), Pen, Line, Rectangle, Ellipse, Arrow, Eraser |
 | **Color Palette** | 9 preset colors |
 | **Stroke Widths** | 4 size options |
 | **Multiple Sketches** | Create and manage multiple drawings |
@@ -79,7 +79,7 @@ Develop mode provides tools for ServiceNow JavaScript and JSON development.
 
 ### 🔀 Dual Mode Support
 Switch between **JavaScript** (ServiceNow) and **JSON** modes with one click. Each mode provides:
-- **Polish**: Format, fix, and validate code/JSON
+- **Polish** (JavaScript) / **Format** (JSON): Format, fix, and validate code/JSON
 - **Compare**: Side-by-side comparison with visual diff highlighting
 - **Visualize** (JavaScript only): Interactive flow diagram visualization
 
@@ -320,15 +320,16 @@ Click any node to see:
 
 ### ⌨️ Keyboard Shortcut
 - `Ctrl+Enter` / `Cmd+Enter` - Context-aware action:
-  - **Polish mode**: Polish the code/JSON
+  - **Polish mode (JS)**: Polish the code
+  - **Format mode (JSON)**: Format the JSON
   - **Compare mode (JSON)**: Compare the two JSON objects
   - **Compare mode (JS)**: Polish the revised code
   - **Visualize mode (JS)**: Generate flow diagram
 
 ### 💾 Export
-- **Polish mode**: Downloads both original and polished files with timestamps
+- **Polish/Format mode**: Downloads both original and polished/formatted files with timestamps
 - **Compare mode**: Downloads both original and revised files with timestamps
-- Filenames: `original_YYYYMMDD_HHMMSS.js` and `polished_YYYYMMDD_HHMMSS.js` (or `.json`)
+- Filenames: `original_YYYYMMDD_HHMMSS.js` and `polished_YYYYMMDD_HHMMSS.js` (or `formatted_YYYYMMDD_HHMMSS.json` for JSON)
 
 ### 🔒 Privacy
 - Works offline after initial load
@@ -380,19 +381,20 @@ After building, the `dist/` folder contains static files that can be deployed to
 ### Plan Mode - Notes (Sketch)
 1. Click **Plan** → **Notes** → **Sketch**
 2. Create a new sketch using the **+** button
-3. Select a drawing tool from the toolbar
-4. Choose color and stroke width
-5. Draw on the canvas - changes save automatically
-6. Use **Clear** to reset the canvas
+3. Select a drawing tool from the toolbar (Text, Pen, Line, Rectangle, Ellipse, Arrow, Eraser)
+4. For Text tool: click on canvas to place text labels
+5. Choose color and stroke width for drawing tools
+6. Draw on the canvas - changes save automatically
+7. Use **Clear** to reset the canvas
 
-### Develop Mode - Polish
+### Develop Mode - Polish (JavaScript) / Format (JSON)
 1. Click **Develop** in the top-level toggle
 2. Select mode: **JavaScript** or **JSON** using the toggle
 3. Paste your code/JSON in the **Original Code** panel (left)
-4. Click **Polish Code/JSON** or press `Ctrl+Enter`
-5. View formatted output in the **Polished Code** panel (right) with highlighted changes
+4. Click **Polish Code** (JavaScript) or **Format JSON** (JSON), or press `Ctrl+Enter`
+5. View formatted output in the **Polished Code** / **Formatted JSON** panel (right) with highlighted changes
 6. Click the fixes/warnings badge to see details
-7. Click **Copy** or **Download** to export the polished output
+7. Click **Copy** or **Download** to export the output
 
 ### Develop Mode - Compare (JavaScript)
 1. Select **JavaScript** mode and click **Compare**
