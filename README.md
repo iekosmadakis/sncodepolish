@@ -27,7 +27,7 @@ A full-featured Kanban board for managing development tasks:
 | **Columns** | To Do, In Progress, On Hold, In Review, Completed |
 | **Backlog** | Collapsible sidebar for backlog items |
 | **Priorities** | Low, Medium, High, Critical with color coding |
-| **External Links** | Link tasks to Jira, ServiceNow, Monday, ClickUp, Asana, or custom URLs |
+| **External Links** | Link tasks to Jira, ServiceNow, Monday, ClickUp, Asana, Trello, Motion, or custom URLs |
 | **Tags** | Organize tasks with custom tags |
 | **Auto-save** | Every change persists instantly to IndexedDB |
 

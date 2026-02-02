@@ -50,6 +50,8 @@ const LINK_TYPE_LABELS = {
   [LINK_TYPES.MONDAY]: 'Monday',
   [LINK_TYPES.CLICKUP]: 'ClickUp',
   [LINK_TYPES.ASANA]: 'Asana',
+  [LINK_TYPES.TRELLO]: 'Trello',
+  [LINK_TYPES.MOTION]: 'Motion',
   [LINK_TYPES.OTHER]: 'Other'
 };
 

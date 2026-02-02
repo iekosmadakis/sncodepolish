@@ -42,6 +42,8 @@ export const LINK_TYPES = {
   MONDAY: 'monday',
   CLICKUP: 'clickup',
   ASANA: 'asana',
+  TRELLO: 'trello',
+  MOTION: 'motion',
   OTHER: 'other'
 };
 
