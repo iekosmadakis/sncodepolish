@@ -2389,16 +2389,18 @@ body {
   align-items: center;
   justify-content: center;
   width: 36px;
-  background: var(--accent-primary);
-  border: none;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
-  color: white;
+  color: var(--text-muted);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .add-link-btn:hover:not(:disabled) {
-  background: #00c49a;
+  background: var(--bg-elevated);
+  color: var(--accent-primary);
+  border-color: var(--accent-primary);
 }
 
 .add-link-btn:disabled {

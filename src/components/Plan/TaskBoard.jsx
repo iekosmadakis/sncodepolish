@@ -564,7 +564,7 @@ function TaskEditForm({ task, onUpdate, onDelete, onClose }) {
               onKeyDown={(e) => e.key === 'Enter' && handleAddLink()}
             />
             <button className="add-link-btn" onClick={handleAddLink} disabled={!newLinkUrl.trim()}>
-              <Icon name="sparkles" size={14} />
+              <Icon name="plus" size={14} />
             </button>
           </div>
         </div>
