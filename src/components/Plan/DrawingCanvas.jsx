@@ -5,7 +5,7 @@
  * All data persists to IndexedDB automatically.
  */
 
-import { useState, useCallback, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
+import { useState, useCallback, useEffect, useRef, forwardRef, useImperativeHandle, useMemo } from 'react';
 import Icon from '../Icon';
 import {
   getAllDrawings,
@@ -77,6 +77,7 @@ const DrawingCanvas = forwardRef(function DrawingCanvas({ onToast }, ref) {
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [textInput, setTextInput] = useState({ show: false, x: 0, y: 0, value: '' });
+  const [deleteConfirm, setDeleteConfirm] = useState({ show: false, id: null, title: '' });
   
   const canvasRef = useRef(null);
   const sortDropdownRef = useRef(null);
@@ -172,25 +173,28 @@ const DrawingCanvas = forwardRef(function DrawingCanvas({ onToast }, ref) {
   }, [showSortDropdown]);
 
   /**
-   * Returns filtered and sorted drawings based on search query and sort setting
+   * Memoized filtered and sorted drawings
    */
-  const sortedDrawings = drawings
-    .filter(drawing => {
-      if (!searchQuery.trim()) return true;
-      const query = searchQuery.toLowerCase();
-      return (drawing.title || 'Untitled').toLowerCase().includes(query);
-    })
-    .sort((a, b) => {
-      switch (sortBy) {
-        case 'oldest':
-          return new Date(a.updatedAt) - new Date(b.updatedAt);
-        case 'alphabetical':
-          return (a.title || 'Untitled').localeCompare(b.title || 'Untitled');
-        case 'recent':
-        default:
-          return new Date(b.updatedAt) - new Date(a.updatedAt);
-      }
-    });
+  const sortedDrawings = useMemo(() => 
+    drawings
+      .filter(drawing => {
+        if (!searchQuery.trim()) return true;
+        const query = searchQuery.toLowerCase();
+        return (drawing.title || 'Untitled').toLowerCase().includes(query);
+      })
+      .sort((a, b) => {
+        switch (sortBy) {
+          case 'oldest':
+            return new Date(a.updatedAt) - new Date(b.updatedAt);
+          case 'alphabetical':
+            return (a.title || 'Untitled').localeCompare(b.title || 'Untitled');
+          case 'recent':
+          default:
+            return new Date(b.updatedAt) - new Date(a.updatedAt);
+        }
+      }),
+    [drawings, searchQuery, sortBy]
+  );
 
   // -------------------------------------------------------------------------
   // Drawing Operations
@@ -245,9 +249,19 @@ const DrawingCanvas = forwardRef(function DrawingCanvas({ onToast }, ref) {
   }, [selectedDrawing, onToast]);
 
   /**
-   * Deletes a drawing
+   * Shows delete confirmation dialog
    */
-  const handleDeleteDrawing = useCallback(async (id) => {
+  const confirmDeleteDrawing = useCallback((id, title) => {
+    setDeleteConfirm({ show: true, id, title: title || 'Untitled Sketch' });
+  }, []);
+
+  /**
+   * Deletes a drawing after confirmation
+   */
+  const handleDeleteDrawing = useCallback(async () => {
+    const { id } = deleteConfirm;
+    if (!id) return;
+
     try {
       await deleteDrawing(id);
       setDrawings(prev => {
@@ -260,8 +274,10 @@ const DrawingCanvas = forwardRef(function DrawingCanvas({ onToast }, ref) {
       onToast?.('Sketch deleted', 'success');
     } catch (error) {
       onToast?.('Failed to delete sketch', 'error');
+    } finally {
+      setDeleteConfirm({ show: false, id: null, title: '' });
     }
-  }, [selectedDrawing, onToast]);
+  }, [deleteConfirm, selectedDrawing, onToast]);
 
   /**
    * Updates drawing title
@@ -381,14 +397,14 @@ const DrawingCanvas = forwardRef(function DrawingCanvas({ onToast }, ref) {
   /**
    * Gets mouse position relative to canvas
    */
-  const getMousePos = (e) => {
+  const getMousePos = useCallback((e) => {
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
     return {
       x: e.clientX - rect.left,
       y: e.clientY - rect.top
     };
-  };
+  }, []);
 
   /**
    * Mouse down handler
@@ -671,8 +687,8 @@ const DrawingCanvas = forwardRef(function DrawingCanvas({ onToast }, ref) {
                   <Icon name="brush" size={14} />
                   <span className="drawing-title">{drawing.title}</span>
                   <button
-                    className="delete-drawing-btn"
-                    onClick={(e) => { e.stopPropagation(); handleDeleteDrawing(drawing.id); }}
+                    className="delete-item-btn"
+                    onClick={(e) => { e.stopPropagation(); confirmDeleteDrawing(drawing.id, drawing.title); }}
                     title="Delete"
                   >
                     <Icon name="x" size={12} />
@@ -704,18 +720,26 @@ const DrawingCanvas = forwardRef(function DrawingCanvas({ onToast }, ref) {
       <div className="drawing-area">
         {selectedDrawing ? (
           <>
+            {/* Title Row */}
+            <div className="sketch-title-row">
+              <input
+                type="text"
+                className="sketch-title-input"
+                value={selectedDrawing.title}
+                onChange={(e) => handleUpdateTitle(e.target.value)}
+                placeholder="Sketch title..."
+              />
+              <button 
+                className="delete-sketch-btn"
+                onClick={() => confirmDeleteDrawing(selectedDrawing.id, selectedDrawing.title)}
+                title="Delete Sketch"
+              >
+                <Icon name="trash" size={14} />
+              </button>
+            </div>
+
             {/* Toolbar */}
             <div className="drawing-toolbar">
-              <div className="toolbar-section">
-                <input
-                  type="text"
-                  className="drawing-title-input"
-                  value={selectedDrawing.title}
-                  onChange={(e) => handleUpdateTitle(e.target.value)}
-                  placeholder="Sketch title..."
-                />
-              </div>
-
               <div className="toolbar-section tools">
                 {Object.entries({
                   [TOOLS.TEXT]: 'Text',
@@ -815,6 +839,33 @@ const DrawingCanvas = forwardRef(function DrawingCanvas({ onToast }, ref) {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm.show && (
+        <div className="delete-confirm-overlay" onClick={() => setDeleteConfirm({ show: false, id: null, title: '' })}>
+          <div className="delete-confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="delete-confirm-icon">
+              <Icon name="warning" size={32} />
+            </div>
+            <h3>Delete Sketch</h3>
+            <p>Are you sure you want to delete "{deleteConfirm.title}"? This action cannot be undone.</p>
+            <div className="delete-confirm-actions">
+              <button 
+                className="cancel-btn"
+                onClick={() => setDeleteConfirm({ show: false, id: null, title: '' })}
+              >
+                Cancel
+              </button>
+              <button 
+                className="confirm-delete-btn"
+                onClick={handleDeleteDrawing}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 });

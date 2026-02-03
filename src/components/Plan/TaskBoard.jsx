@@ -5,7 +5,7 @@
  * All data persists to IndexedDB automatically.
  */
 
-import { useState, useCallback, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
+import { useState, useCallback, useEffect, useRef, forwardRef, useImperativeHandle, useMemo } from 'react';
 import Icon from '../Icon';
 import {
   TASK_STATUS,
@@ -220,19 +220,22 @@ const TaskBoard = forwardRef(function TaskBoard({ onToast }, ref) {
   }, [tasks]);
 
   /**
-   * Gets filtered backlog tasks based on search query
+   * Memoized filtered backlog tasks
    */
-  const backlogTasks = tasks
-    .filter(t => t.status === TASK_STATUS.BACKLOG)
-    .filter(t => {
-      if (!backlogSearchQuery.trim()) return true;
-      const query = backlogSearchQuery.toLowerCase();
-      return (
-        t.title.toLowerCase().includes(query) ||
-        (t.description || '').toLowerCase().includes(query)
-      );
-    })
-    .sort((a, b) => a.order - b.order);
+  const backlogTasks = useMemo(() => 
+    tasks
+      .filter(t => t.status === TASK_STATUS.BACKLOG)
+      .filter(t => {
+        if (!backlogSearchQuery.trim()) return true;
+        const query = backlogSearchQuery.toLowerCase();
+        return (
+          t.title.toLowerCase().includes(query) ||
+          (t.description || '').toLowerCase().includes(query)
+        );
+      })
+      .sort((a, b) => a.order - b.order),
+    [tasks, backlogSearchQuery]
+  );
 
   // -------------------------------------------------------------------------
   // Render

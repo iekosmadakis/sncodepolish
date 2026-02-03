@@ -4,7 +4,7 @@
  * with formatting, code snippets, and checklists. All data persists to IndexedDB.
  */
 
-import { useState, useCallback, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
+import { useState, useCallback, useEffect, useRef, forwardRef, useImperativeHandle, useMemo } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
@@ -212,6 +212,7 @@ const NoteEditor = forwardRef(function NoteEditor({ onToast }, ref) {
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState({ show: false, id: null, title: '' });
   const saveTimeoutRef = useRef(null);
   const sortDropdownRef = useRef(null);
 
@@ -309,9 +310,19 @@ const NoteEditor = forwardRef(function NoteEditor({ onToast }, ref) {
   }, [selectedNote, handleUpdateNote]);
 
   /**
-   * Deletes a note
+   * Shows delete confirmation dialog
    */
-  const handleDeleteNote = useCallback(async (id) => {
+  const confirmDeleteNote = useCallback((id, title) => {
+    setDeleteConfirm({ show: true, id, title: title || 'Untitled' });
+  }, []);
+
+  /**
+   * Deletes a note after confirmation
+   */
+  const handleDeleteNote = useCallback(async () => {
+    const { id } = deleteConfirm;
+    if (!id) return;
+
     try {
       await deleteNote(id);
       setNotes(prev => {
@@ -325,8 +336,10 @@ const NoteEditor = forwardRef(function NoteEditor({ onToast }, ref) {
       onToast?.('Note deleted', 'success');
     } catch (error) {
       onToast?.('Failed to delete note', 'error');
+    } finally {
+      setDeleteConfirm({ show: false, id: null, title: '' });
     }
-  }, [selectedNote, onToast]);
+  }, [deleteConfirm, selectedNote, onToast]);
 
   // -------------------------------------------------------------------------
   // Filtering & Sorting
@@ -335,29 +348,35 @@ const NoteEditor = forwardRef(function NoteEditor({ onToast }, ref) {
   /**
    * Strips HTML tags for search and preview
    */
-  const stripHtml = (html) => {
+  const stripHtml = useCallback((html) => {
     const tmp = document.createElement('div');
     tmp.innerHTML = html || '';
     return tmp.textContent || tmp.innerText || '';
-  };
+  }, []);
 
-  const filteredNotes = notes
-    .filter(note => {
-      const plainContent = stripHtml(note.content);
-      return note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        plainContent.toLowerCase().includes(searchQuery.toLowerCase());
-    })
-    .sort((a, b) => {
-      switch (sortBy) {
-        case 'oldest':
-          return new Date(a.updatedAt) - new Date(b.updatedAt);
-        case 'alphabetical':
-          return (a.title || 'Untitled').localeCompare(b.title || 'Untitled');
-        case 'recent':
-        default:
-          return new Date(b.updatedAt) - new Date(a.updatedAt);
-      }
-    });
+  /**
+   * Memoized filtered and sorted notes
+   */
+  const filteredNotes = useMemo(() => 
+    notes
+      .filter(note => {
+        const plainContent = stripHtml(note.content);
+        return note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          plainContent.toLowerCase().includes(searchQuery.toLowerCase());
+      })
+      .sort((a, b) => {
+        switch (sortBy) {
+          case 'oldest':
+            return new Date(a.updatedAt) - new Date(b.updatedAt);
+          case 'alphabetical':
+            return (a.title || 'Untitled').localeCompare(b.title || 'Untitled');
+          case 'recent':
+          default:
+            return new Date(b.updatedAt) - new Date(a.updatedAt);
+        }
+      }),
+    [notes, searchQuery, sortBy, stripHtml]
+  );
 
   /**
    * Close sort dropdown when clicking outside
@@ -443,13 +462,22 @@ const NoteEditor = forwardRef(function NoteEditor({ onToast }, ref) {
               className={`note-list-item ${selectedNote?.id === note.id ? 'selected' : ''}`}
               onClick={() => setSelectedNote(note)}
             >
-              <div className="note-list-title">{note.title || 'Untitled'}</div>
-              <div className="note-list-preview">
-                {stripHtml(note.content)?.substring(0, 60) || 'Empty note...'}
+              <div className="note-item-content">
+                <div className="note-list-title">{note.title || 'Untitled'}</div>
+                <div className="note-list-preview">
+                  {stripHtml(note.content)?.substring(0, 60) || 'Empty note...'}
+                </div>
+                <div className="note-list-date">
+                  {new Date(note.updatedAt).toLocaleDateString()}
+                </div>
               </div>
-              <div className="note-list-date">
-                {new Date(note.updatedAt).toLocaleDateString()}
-              </div>
+              <button
+                className="delete-item-btn"
+                onClick={(e) => { e.stopPropagation(); confirmDeleteNote(note.id, note.title); }}
+                title="Delete"
+              >
+                <Icon name="x" size={12} />
+              </button>
             </div>
           ))}
           {filteredNotes.length === 0 && (
@@ -475,7 +503,7 @@ const NoteEditor = forwardRef(function NoteEditor({ onToast }, ref) {
               />
               <button 
                 className="delete-note-btn"
-                onClick={() => handleDeleteNote(selectedNote.id)}
+                onClick={() => confirmDeleteNote(selectedNote.id, selectedNote.title)}
                 title="Delete Note"
               >
                 <Icon name="trash" size={14} />
@@ -498,6 +526,33 @@ const NoteEditor = forwardRef(function NoteEditor({ onToast }, ref) {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm.show && (
+        <div className="delete-confirm-overlay" onClick={() => setDeleteConfirm({ show: false, id: null, title: '' })}>
+          <div className="delete-confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="delete-confirm-icon">
+              <Icon name="warning" size={32} />
+            </div>
+            <h3>Delete Note</h3>
+            <p>Are you sure you want to delete "{deleteConfirm.title}"? This action cannot be undone.</p>
+            <div className="delete-confirm-actions">
+              <button 
+                className="cancel-btn"
+                onClick={() => setDeleteConfirm({ show: false, id: null, title: '' })}
+              >
+                Cancel
+              </button>
+              <button 
+                className="confirm-delete-btn"
+                onClick={handleDeleteNote}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 });

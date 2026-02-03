@@ -55,7 +55,8 @@ body {
 .drawings-sort-btn .icon-svg,
 .sidebar-expand-btn .icon-svg,
 .sidebar-collapse-btn .icon-svg,
-.delete-drawing-btn .icon-svg,
+.delete-item-btn .icon-svg,
+.delete-sketch-btn .icon-svg,
 .tool-btn .icon-svg,
 .delete-note-btn .icon-svg,
 .close-btn .icon-svg,
@@ -398,7 +399,7 @@ body {
   cursor: pointer;
   color: var(--text-muted);
   border-radius: 4px;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
   line-height: 1;
 }
 
@@ -697,7 +698,7 @@ body {
   padding: 10px 16px;
   font-size: 12px;
   color: var(--text-secondary);
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
   border-left: 2px solid transparent;
 }
 
@@ -2550,7 +2551,7 @@ body {
   border-radius: 8px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
   z-index: 100;
-  animation: dropdownSlide 0.15s ease-out;
+  animation: dropdownSlide 0.2s ease;
   overflow: hidden;
 }
 
@@ -2566,7 +2567,7 @@ body {
   font-size: 12px;
   font-family: var(--font-sans);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
   text-align: left;
 }
 
@@ -2590,6 +2591,9 @@ body {
 }
 
 .note-list-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 14px 16px;
   border-bottom: 1px solid var(--border-color);
   cursor: pointer;
@@ -2603,6 +2607,11 @@ body {
 .note-list-item.selected {
   background: var(--bg-tertiary);
   border-left: 3px solid var(--accent-primary);
+}
+
+.note-item-content {
+  flex: 1;
+  min-width: 0;
 }
 
 .note-list-title {
@@ -3089,7 +3098,7 @@ body {
   border-radius: 8px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
   z-index: 100;
-  animation: dropdownSlide 0.15s ease-out;
+  animation: dropdownSlide 0.2s ease;
   overflow: hidden;
 }
 
@@ -3126,7 +3135,8 @@ body {
   white-space: nowrap;
 }
 
-.delete-drawing-btn {
+/* Shared delete button for sidebar items (notes and sketches) */
+.delete-item-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3139,13 +3149,15 @@ body {
   border-radius: 4px;
   opacity: 0;
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
-.drawing-list-item:hover .delete-drawing-btn {
+.drawing-list-item:hover .delete-item-btn,
+.note-list-item:hover .delete-item-btn {
   opacity: 1;
 }
 
-.delete-drawing-btn:hover {
+.delete-item-btn:hover {
   background: rgba(239, 68, 68, 0.2);
   color: var(--error);
 }
@@ -3195,21 +3207,48 @@ body {
   gap: 6px;
 }
 
-.drawing-title-input {
-  width: 180px;
-  padding: 6px 10px;
-  font-size: 13px;
-  font-weight: 500;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
+.sketch-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 20px;
+  padding-right: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.sketch-title-input {
+  flex: 1;
+  padding: 16px 0;
+  font-size: 20px;
+  font-weight: 600;
+  background: transparent;
+  border: none;
   color: var(--text-primary);
   font-family: var(--font-sans);
   outline: none;
 }
 
-.drawing-title-input:focus {
-  border-color: var(--accent-primary);
+.sketch-title-input::placeholder {
+  color: var(--text-muted);
+}
+
+.delete-sketch-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.delete-sketch-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: var(--error);
 }
 
 .tool-btn {
@@ -3360,5 +3399,114 @@ body {
 
 .drawing-empty p {
   font-size: 13px;
+}
+
+/* =============================================================================
+   DELETE CONFIRMATION MODAL
+   ============================================================================= */
+
+.delete-confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.2s ease;
+}
+
+.delete-confirm-modal {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 24px;
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  animation: modalSlideIn 0.2s ease;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.delete-confirm-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 16px;
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: 50%;
+  color: var(--error);
+}
+
+.delete-confirm-modal h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 8px;
+}
+
+.delete-confirm-modal p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0 0 24px;
+  line-height: 1.5;
+}
+
+.delete-confirm-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.delete-confirm-actions .cancel-btn {
+  padding: 10px 20px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.delete-confirm-actions .cancel-btn:hover {
+  background: var(--bg-primary);
+  border-color: var(--text-muted);
+}
+
+.delete-confirm-actions .confirm-delete-btn {
+  padding: 10px 20px;
+  background: var(--error);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.delete-confirm-actions .confirm-delete-btn:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
 }
 

@@ -742,7 +742,8 @@ const icons = {
         strokeLinejoin="round"
       />
     </>
-  )
+  ),
+
 };
 
 /**
