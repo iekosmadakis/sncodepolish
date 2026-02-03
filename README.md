@@ -33,11 +33,13 @@ A full-featured Kanban board for managing development tasks:
 
 ### Notes (Docs)
 
-Rich text note-taking with markdown support:
+WYSIWYG rich text note-taking with formatting:
 
 | Feature | Description |
 |---------|-------------|
-| **Markdown Toolbar** | Bold, italic, headings, lists, checklists, code blocks, links, quotes |
+| **Rich Text Editor** | Bold, italic, headings, lists, checklists, code blocks, links, quotes |
+| **WYSIWYG Editing** | See formatted text as you type |
+| **Syntax Highlighting** | Code blocks with language highlighting |
 | **Search** | Filter notes by title or content |
 | **Auto-save** | Debounced saving with visual indicator |
 | **Sidebar Navigation** | Quick access to all notes with previews |
@@ -374,9 +376,10 @@ After building, the `dist/` folder contains static files that can be deployed to
 ### Plan Mode - Notes (Docs)
 1. Click **Plan** → **Notes** → **Docs**
 2. Create a new note using the **+** button
-3. Use the markdown toolbar for formatting (bold, italic, code, checklists, etc.)
-4. Notes save automatically as you type
-5. Search notes using the sidebar search box
+3. Use the WYSIWYG toolbar for formatting (bold, italic, code, checklists, etc.)
+4. See formatted text immediately as you type
+5. Notes save automatically as you type
+6. Search notes using the sidebar search box
 
 ### Plan Mode - Notes (Sketch)
 1. Click **Plan** → **Notes** → **Sketch**
@@ -431,6 +434,8 @@ After building, the `dist/` folder contains static files that can be deployed to
 | React | 19.x | UI framework |
 | Vite | 7.x | Build tool |
 | Monaco Editor | 4.x | Code editor (VS Code engine) |
+| TipTap | 3.x | WYSIWYG rich text editor (Notes) |
+| Lowlight | 3.x | Syntax highlighting for code blocks |
 | Prettier | 3.x | Code formatting |
 | React Flow | 11.x | Interactive flow diagrams |
 | Acorn | 8.x | JavaScript AST parsing |

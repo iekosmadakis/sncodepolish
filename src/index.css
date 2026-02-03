@@ -2698,12 +2698,22 @@ body {
 }
 
 .delete-note-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: none;
   color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
 }
 
 .delete-note-btn:hover {
-  color: var(--error) !important;
-  background: rgba(239, 68, 68, 0.1) !important;
+  background: rgba(239, 68, 68, 0.2);
+  color: var(--error);
 }
 
 .note-title-input {
@@ -2722,21 +2732,182 @@ body {
   color: var(--text-muted);
 }
 
-.note-content-editor {
+.note-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-right: 12px;
+}
+
+.note-title-row .note-title-input {
+  flex: 1;
+  border-bottom: none;
+}
+
+.note-title-row .delete-note-btn {
+  flex-shrink: 0;
+}
+
+/* TipTap WYSIWYG Editor Styles */
+.tiptap-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.tiptap-wrapper .note-editor-toolbar {
+  border-top: none;
+}
+
+.tiptap-wrapper .ProseMirror {
   flex: 1;
   padding: 20px;
   font-size: 14px;
-  font-family: var(--font-mono);
-  line-height: 1.6;
-  background: transparent;
-  border: none;
+  font-family: var(--font-sans);
+  line-height: 1.7;
   color: var(--text-primary);
-  resize: none;
   outline: none;
+  overflow-y: auto;
 }
 
-.note-content-editor::placeholder {
+.tiptap-wrapper .ProseMirror p {
+  margin: 0 0 12px 0;
+}
+
+.tiptap-wrapper .ProseMirror h1,
+.tiptap-wrapper .ProseMirror h2,
+.tiptap-wrapper .ProseMirror h3 {
+  color: var(--text-primary);
+  font-weight: 600;
+  margin: 24px 0 12px 0;
+  line-height: 1.3;
+}
+
+.tiptap-wrapper .ProseMirror h1 {
+  font-size: 1.75em;
+}
+
+.tiptap-wrapper .ProseMirror h2 {
+  font-size: 1.4em;
+}
+
+.tiptap-wrapper .ProseMirror h3 {
+  font-size: 1.15em;
+}
+
+.tiptap-wrapper .ProseMirror strong {
+  font-weight: 600;
+}
+
+.tiptap-wrapper .ProseMirror em {
+  font-style: italic;
+}
+
+.tiptap-wrapper .ProseMirror code {
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  color: var(--accent-primary);
+}
+
+.tiptap-wrapper .ProseMirror pre {
+  background: var(--bg-tertiary);
+  border-radius: 8px;
+  padding: 16px;
+  margin: 12px 0;
+  overflow-x: auto;
+}
+
+.tiptap-wrapper .ProseMirror pre code {
+  background: none;
+  padding: 0;
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.tiptap-wrapper .ProseMirror blockquote {
+  border-left: 3px solid var(--accent-primary);
+  margin: 12px 0;
+  padding-left: 16px;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.tiptap-wrapper .ProseMirror ul,
+.tiptap-wrapper .ProseMirror ol {
+  padding-left: 24px;
+  margin: 12px 0;
+}
+
+.tiptap-wrapper .ProseMirror li {
+  margin: 6px 0;
+}
+
+.tiptap-wrapper .ProseMirror ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0;
+}
+
+.tiptap-wrapper .ProseMirror ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.tiptap-wrapper .ProseMirror ul[data-type="taskList"] li > label {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.tiptap-wrapper .ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--accent-primary);
+}
+
+.tiptap-wrapper .ProseMirror ul[data-type="taskList"] li > div {
+  flex: 1;
+}
+
+.tiptap-wrapper .ProseMirror ul[data-type="taskList"] li[data-checked="true"] > div {
+  text-decoration: line-through;
   color: var(--text-muted);
+}
+
+.tiptap-wrapper .ProseMirror a,
+.tiptap-wrapper .ProseMirror .tiptap-link {
+  color: var(--accent-primary);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.tiptap-wrapper .ProseMirror a:hover {
+  color: var(--accent-secondary);
+}
+
+.tiptap-wrapper .ProseMirror p.is-editor-empty:first-child::before {
+  color: var(--text-muted);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.tiptap-wrapper .ProseMirror hr {
+  border: none;
+  border-top: 1px solid var(--border-color);
+  margin: 24px 0;
+}
+
+/* Toolbar active state for WYSIWYG */
+.note-editor-toolbar button.active {
+  background: var(--accent-primary);
+  color: var(--bg-primary);
 }
 
 .note-editor-empty {

@@ -665,6 +665,83 @@ const icons = {
         strokeLinecap="round"
       />
     </>
+  ),
+
+  /**
+   * List - Used for bullet list in notes
+   */
+  list: (
+    <>
+      <path 
+        d="M8 6H21" 
+        stroke="currentColor" 
+        strokeWidth="2" 
+        strokeLinecap="round"
+      />
+      <path 
+        d="M8 12H21" 
+        stroke="currentColor" 
+        strokeWidth="2" 
+        strokeLinecap="round"
+      />
+      <path 
+        d="M8 18H21" 
+        stroke="currentColor" 
+        strokeWidth="2" 
+        strokeLinecap="round"
+      />
+      <circle cx="4" cy="6" r="1.5" fill="currentColor" />
+      <circle cx="4" cy="12" r="1.5" fill="currentColor" />
+      <circle cx="4" cy="18" r="1.5" fill="currentColor" />
+    </>
+  ),
+
+  /**
+   * Quote - Used for blockquote in notes
+   */
+  quote: (
+    <>
+      <path 
+        d="M3 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V21z" 
+        fill="none" 
+        stroke="currentColor" 
+        strokeWidth="2" 
+        strokeLinecap="round" 
+        strokeLinejoin="round"
+      />
+      <path 
+        d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V21z" 
+        fill="none" 
+        stroke="currentColor" 
+        strokeWidth="2" 
+        strokeLinecap="round" 
+        strokeLinejoin="round"
+      />
+    </>
+  ),
+
+  /**
+   * Link - Used for hyperlinks in notes
+   */
+  link: (
+    <>
+      <path 
+        d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" 
+        fill="none" 
+        stroke="currentColor" 
+        strokeWidth="2" 
+        strokeLinecap="round" 
+        strokeLinejoin="round"
+      />
+      <path 
+        d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" 
+        fill="none" 
+        stroke="currentColor" 
+        strokeWidth="2" 
+        strokeLinecap="round" 
+        strokeLinejoin="round"
+      />
+    </>
   )
 };
 

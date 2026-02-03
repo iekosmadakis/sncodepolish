@@ -361,6 +361,8 @@ function App() {
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
+      // Reload page to refresh all components with imported data
+      setTimeout(() => window.location.reload(), 500);
       // Force re-render by toggling sub-mode
       const currentSubMode = planSubMode;
       setPlanSubMode('');

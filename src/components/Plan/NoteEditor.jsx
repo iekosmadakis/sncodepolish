@@ -1,10 +1,18 @@
 /**
- * @fileoverview Note Editor Component - Rich Text Notes (Docs)
- * @description Provides a rich text editor for taking notes with markdown support,
- * code snippets, and checklists. All data persists to IndexedDB automatically.
+ * @fileoverview Note Editor Component - WYSIWYG Rich Text Notes (Docs)
+ * @description Provides a WYSIWYG rich text editor using TipTap for taking notes
+ * with formatting, code snippets, and checklists. All data persists to IndexedDB.
  */
 
 import { useState, useCallback, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Link from '@tiptap/extension-link';
+import TaskList from '@tiptap/extension-task-list';
+import TaskItem from '@tiptap/extension-task-item';
+import Placeholder from '@tiptap/extension-placeholder';
+import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
+import { common, createLowlight } from 'lowlight';
 import Icon from '../Icon';
 import {
   getAllNotes,
@@ -13,12 +21,183 @@ import {
   deleteNote
 } from '../../utils/storage/planStorage';
 
+// Initialize lowlight with common languages
+const lowlight = createLowlight(common);
+
+// =============================================================================
+// TIPTAP EDITOR COMPONENT
+// =============================================================================
+
+/**
+ * TipTapEditor - WYSIWYG editor instance with toolbar
+ * 
+ * @param {Object} props - Component props
+ * @param {Object} props.note - The note being edited
+ * @param {Function} props.onUpdate - Callback when content changes
+ * @param {boolean} props.isSaving - Whether content is being saved
+ */
+function TipTapEditor({ note, onUpdate, isSaving }) {
+  // Force re-render when editor state changes (for toolbar active states)
+  const [, setForceUpdate] = useState(0);
+
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({
+        codeBlock: false, // Disable default, use lowlight version
+        heading: {
+          levels: [1, 2, 3]
+        }
+      }),
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: {
+          class: 'tiptap-link'
+        }
+      }),
+      TaskList,
+      TaskItem.configure({
+        nested: true
+      }),
+      Placeholder.configure({
+        placeholder: 'Start writing...'
+      }),
+      CodeBlockLowlight.configure({
+        lowlight
+      })
+    ],
+    content: note?.content || '',
+    onUpdate: ({ editor }) => {
+      onUpdate(editor.getHTML());
+    },
+    onSelectionUpdate: () => {
+      // Re-render toolbar when selection changes
+      setForceUpdate(n => n + 1);
+    },
+    onTransaction: () => {
+      // Re-render toolbar when any transaction occurs (formatting changes)
+      setForceUpdate(n => n + 1);
+    },
+    editorProps: {
+      attributes: {
+        class: 'tiptap-editor-content'
+      }
+    }
+  });
+
+  // Update editor content when note changes
+  useEffect(() => {
+    if (editor && note) {
+      const currentContent = editor.getHTML();
+      if (currentContent !== note.content) {
+        editor.commands.setContent(note.content || '');
+      }
+    }
+  }, [editor, note?.id]);
+
+  if (!editor) {
+    return null;
+  }
+
+  /**
+   * Adds a link to selected text
+   */
+  const addLink = () => {
+    const url = window.prompt('Enter URL:');
+    if (url) {
+      editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+    }
+  };
+
+  return (
+    <div className="tiptap-wrapper">
+      {/* Editor Toolbar */}
+      <div className="note-editor-toolbar">
+        <div className="toolbar-group">
+          <button
+            onClick={() => editor.chain().focus().toggleBold().run()}
+            className={editor.isActive('bold') ? 'active' : ''}
+            title="Bold"
+          >
+            <strong>B</strong>
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleItalic().run()}
+            className={editor.isActive('italic') ? 'active' : ''}
+            title="Italic"
+          >
+            <em>I</em>
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+            className={editor.isActive('heading', { level: 2 }) ? 'active' : ''}
+            title="Heading"
+          >
+            H
+          </button>
+        </div>
+        <div className="toolbar-group">
+          <button
+            onClick={() => editor.chain().focus().toggleBulletList().run()}
+            className={editor.isActive('bulletList') ? 'active' : ''}
+            title="Bullet List"
+          >
+            <Icon name="list" size={14} />
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleTaskList().run()}
+            className={editor.isActive('taskList') ? 'active' : ''}
+            title="Checklist"
+          >
+            <Icon name="check" size={14} />
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleBlockquote().run()}
+            className={editor.isActive('blockquote') ? 'active' : ''}
+            title="Quote"
+          >
+            <Icon name="quote" size={14} />
+          </button>
+        </div>
+        <div className="toolbar-group">
+          <button
+            onClick={() => editor.chain().focus().toggleCode().run()}
+            className={editor.isActive('code') ? 'active' : ''}
+            title="Inline Code"
+          >
+            <Icon name="code" size={14} />
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+            className={editor.isActive('codeBlock') ? 'active' : ''}
+            title="Code Block"
+          >
+            <Icon name="terminal" size={14} />
+          </button>
+          <button
+            onClick={addLink}
+            className={editor.isActive('link') ? 'active' : ''}
+            title="Link"
+          >
+            <Icon name="link" size={14} />
+          </button>
+        </div>
+        <div className="toolbar-right">
+          {isSaving && <span className="save-indicator">Saving...</span>}
+        </div>
+      </div>
+
+      {/* Editor Content */}
+      <EditorContent editor={editor} />
+    </div>
+  );
+}
+
 // =============================================================================
 // NOTE EDITOR COMPONENT
 // =============================================================================
 
 /**
- * NoteEditor - Notes management with rich text editing
+ * NoteEditor - Notes management with WYSIWYG editing
  * 
  * @param {Object} props - Component props
  * @param {Function} props.onToast - Toast notification callback
@@ -33,7 +212,6 @@ const NoteEditor = forwardRef(function NoteEditor({ onToast }, ref) {
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const editorRef = useRef(null);
   const saveTimeoutRef = useRef(null);
   const sortDropdownRef = useRef(null);
 
@@ -122,6 +300,15 @@ const NoteEditor = forwardRef(function NoteEditor({ onToast }, ref) {
   }, [selectedNote, onToast]);
 
   /**
+   * Handles content update from TipTap editor
+   */
+  const handleContentUpdate = useCallback((content) => {
+    if (selectedNote) {
+      handleUpdateNote(selectedNote.id, { content });
+    }
+  }, [selectedNote, handleUpdateNote]);
+
+  /**
    * Deletes a note
    */
   const handleDeleteNote = useCallback(async (id) => {
@@ -142,60 +329,24 @@ const NoteEditor = forwardRef(function NoteEditor({ onToast }, ref) {
   }, [selectedNote, onToast]);
 
   // -------------------------------------------------------------------------
-  // Editor Actions
-  // -------------------------------------------------------------------------
-
-  /**
-   * Inserts text at cursor position
-   */
-  const insertAtCursor = useCallback((before, after = '') => {
-    const textarea = editorRef.current;
-    if (!textarea || !selectedNote) return;
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const content = selectedNote.content;
-    const selectedText = content.substring(start, end);
-    
-    const newContent = 
-      content.substring(0, start) + 
-      before + selectedText + after + 
-      content.substring(end);
-    
-    handleUpdateNote(selectedNote.id, { content: newContent });
-    
-    // Restore cursor position
-    setTimeout(() => {
-      textarea.focus();
-      const newPos = start + before.length + selectedText.length + after.length;
-      textarea.setSelectionRange(newPos, newPos);
-    }, 0);
-  }, [selectedNote, handleUpdateNote]);
-
-  /**
-   * Toolbar actions
-   */
-  const toolbarActions = {
-    bold: () => insertAtCursor('**', '**'),
-    italic: () => insertAtCursor('*', '*'),
-    heading: () => insertAtCursor('## ', ''),
-    list: () => insertAtCursor('- ', ''),
-    checklist: () => insertAtCursor('- [ ] ', ''),
-    code: () => insertAtCursor('`', '`'),
-    codeBlock: () => insertAtCursor('\n```\n', '\n```\n'),
-    link: () => insertAtCursor('[', '](url)'),
-    quote: () => insertAtCursor('> ', '')
-  };
-
-  // -------------------------------------------------------------------------
   // Filtering & Sorting
   // -------------------------------------------------------------------------
 
+  /**
+   * Strips HTML tags for search and preview
+   */
+  const stripHtml = (html) => {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html || '';
+    return tmp.textContent || tmp.innerText || '';
+  };
+
   const filteredNotes = notes
-    .filter(note => 
-      note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      note.content.toLowerCase().includes(searchQuery.toLowerCase())
-    )
+    .filter(note => {
+      const plainContent = stripHtml(note.content);
+      return note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        plainContent.toLowerCase().includes(searchQuery.toLowerCase());
+    })
     .sort((a, b) => {
       switch (sortBy) {
         case 'oldest':
@@ -294,7 +445,7 @@ const NoteEditor = forwardRef(function NoteEditor({ onToast }, ref) {
             >
               <div className="note-list-title">{note.title || 'Untitled'}</div>
               <div className="note-list-preview">
-                {note.content?.substring(0, 60) || 'Empty note...'}
+                {stripHtml(note.content)?.substring(0, 60) || 'Empty note...'}
               </div>
               <div className="note-list-date">
                 {new Date(note.updatedAt).toLocaleDateString()}
@@ -313,74 +464,35 @@ const NoteEditor = forwardRef(function NoteEditor({ onToast }, ref) {
       <div className="note-editor-panel">
         {selectedNote ? (
           <>
-            {/* Editor Toolbar */}
-            <div className="note-editor-toolbar">
-              <div className="toolbar-group">
-                <button onClick={toolbarActions.bold} title="Bold (Ctrl+B)">
-                  <strong>B</strong>
-                </button>
-                <button onClick={toolbarActions.italic} title="Italic (Ctrl+I)">
-                  <em>I</em>
-                </button>
-                <button onClick={toolbarActions.heading} title="Heading">
-                  H
-                </button>
-              </div>
-              <div className="toolbar-group">
-                <button onClick={toolbarActions.list} title="Bullet List">
-                  <Icon name="clipboard" size={14} />
-                </button>
-                <button onClick={toolbarActions.checklist} title="Checklist">
-                  <Icon name="check" size={14} />
-                </button>
-                <button onClick={toolbarActions.quote} title="Quote">
-                  <Icon name="info" size={14} />
-                </button>
-              </div>
-              <div className="toolbar-group">
-                <button onClick={toolbarActions.code} title="Inline Code">
-                  <Icon name="code" size={14} />
-                </button>
-                <button onClick={toolbarActions.codeBlock} title="Code Block">
-                  <Icon name="terminal" size={14} />
-                </button>
-                <button onClick={toolbarActions.link} title="Link">
-                  <Icon name="download" size={14} />
-                </button>
-              </div>
-              <div className="toolbar-right">
-                {isSaving && <span className="save-indicator">Saving...</span>}
-                <button 
-                  className="delete-note-btn"
-                  onClick={() => handleDeleteNote(selectedNote.id)}
-                  title="Delete Note"
-                >
-                  <Icon name="trash" size={14} />
-                </button>
-              </div>
+            {/* Title Row */}
+            <div className="note-title-row">
+              <input
+                type="text"
+                className="note-title-input"
+                value={selectedNote.title}
+                onChange={(e) => handleUpdateNote(selectedNote.id, { title: e.target.value })}
+                placeholder="Note title..."
+              />
+              <button 
+                className="delete-note-btn"
+                onClick={() => handleDeleteNote(selectedNote.id)}
+                title="Delete Note"
+              >
+                <Icon name="trash" size={14} />
+              </button>
             </div>
 
-            {/* Title Input */}
-            <input
-              type="text"
-              className="note-title-input"
-              value={selectedNote.title}
-              onChange={(e) => handleUpdateNote(selectedNote.id, { title: e.target.value })}
-              placeholder="Note title..."
-            />
-
-            {/* Content Editor */}
-            <textarea
-              ref={editorRef}
-              className="note-content-editor"
-              value={selectedNote.content}
-              onChange={(e) => handleUpdateNote(selectedNote.id, { content: e.target.value })}
-              placeholder="Start writing... (Markdown supported)"
+            {/* TipTap WYSIWYG Editor */}
+            <TipTapEditor
+              key={selectedNote.id}
+              note={selectedNote}
+              onUpdate={handleContentUpdate}
+              isSaving={isSaving}
             />
           </>
         ) : (
           <div className="note-editor-empty">
-            <Icon name="clipboard" size={48} />
+            <Icon name="document" size={48} />
             <h3>No Note Selected</h3>
             <p>Select a note from the sidebar or create a new one</p>
           </div>
