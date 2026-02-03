@@ -398,7 +398,7 @@ function App() {
       let deletions = 0;
       let modifications = 0;
       
-      const countChanges = (d, path = '') => {
+      const countChanges = (d) => {
         if (!d || typeof d !== 'object') return;
         
         for (const key of Object.keys(d)) {
@@ -408,7 +408,7 @@ function App() {
             else if (value.length === 2) modifications++;
             else if (value.length === 3 && value[2] === 0) deletions++;
           } else if (typeof value === 'object') {
-            countChanges(value, `${path}.${key}`);
+            countChanges(value);
           }
         }
       };
