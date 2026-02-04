@@ -416,6 +416,22 @@ const DrawingCanvas = forwardRef(function DrawingCanvas({ onToast }, ref) {
     
     // Handle text tool - show input at click position
     if (tool === TOOLS.TEXT) {
+      // Submit any existing text before creating new input
+      const existingValue = textInputRef.current?.value;
+      if (textInput.show && existingValue?.trim()) {
+        const newElement = {
+          type: 'text',
+          x: textInput.x,
+          y: textInput.y,
+          text: existingValue,
+          color,
+          fontSize: strokeWidth * 4
+        };
+        const newElements = [...(selectedDrawing.elements || []), newElement];
+        setSelectedDrawing(prev => ({ ...prev, elements: newElements }));
+        saveDrawing(newElements);
+      }
+      
       setTextInput({ show: true, x: pos.x, y: pos.y, value: '' });
       // Focus the input after it renders
       setTimeout(() => textInputRef.current?.focus(), 10);
@@ -573,9 +589,13 @@ const DrawingCanvas = forwardRef(function DrawingCanvas({ onToast }, ref) {
 
   /**
    * Handles text input submission
+   * Uses ref to get current value directly from DOM to avoid stale closure issues
    */
   const handleTextSubmit = useCallback(() => {
-    if (!textInput.value.trim() || !selectedDrawing) {
+    // Get current value directly from the input element (avoids stale closure)
+    const currentValue = textInputRef.current?.value || textInput.value;
+    
+    if (!currentValue.trim() || !selectedDrawing) {
       setTextInput({ show: false, x: 0, y: 0, value: '' });
       return;
     }
@@ -584,7 +604,7 @@ const DrawingCanvas = forwardRef(function DrawingCanvas({ onToast }, ref) {
       type: 'text',
       x: textInput.x,
       y: textInput.y,
-      text: textInput.value,
+      text: currentValue,
       color,
       fontSize: strokeWidth * 4 // Scale font size with stroke width
     };
