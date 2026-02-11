@@ -478,17 +478,49 @@ function TaskEditForm({ task, onUpdate, onDelete, onClose }) {
   const [links, setLinks] = useState(task.externalLinks || []);
   const [newLinkType, setNewLinkType] = useState(LINK_TYPES.JIRA);
   const [newLinkUrl, setNewLinkUrl] = useState('');
+  const saveTimeoutRef = useRef(null);
+  const latestValuesRef = useRef({ title, description, tags });
+
+  // Keep ref in sync with latest values
+  latestValuesRef.current = { title, description, tags };
 
   /**
-   * Auto-save on field changes
+   * Immediate save for select fields (status, priority)
    */
   const handleFieldChange = useCallback((field, value) => {
-    const updates = { [field]: value };
-    if (field === 'tags') {
-      updates.tags = value.split(',').map(t => t.trim()).filter(Boolean);
-    }
-    onUpdate(task.id, updates);
+    onUpdate(task.id, { [field]: value });
   }, [task.id, onUpdate]);
+
+  /**
+   * Debounced auto-save for text fields
+   */
+  useEffect(() => {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    saveTimeoutRef.current = setTimeout(() => {
+      const parsedTags = tags.split(',').map(t => t.trim()).filter(Boolean);
+      onUpdate(task.id, { title, description, tags: parsedTags });
+    }, 500);
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [title, description, tags, task.id, onUpdate]);
+
+  /**
+   * Flush pending changes on unmount (e.g. clicking outside the modal)
+   */
+  useEffect(() => {
+    return () => {
+      const { title: t, description: d, tags: tg } = latestValuesRef.current;
+      const parsedTags = tg.split(',').map(s => s.trim()).filter(Boolean);
+      onUpdate(task.id, { title: t, description: d, tags: parsedTags });
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /**
    * Adds an external link
@@ -518,7 +550,6 @@ function TaskEditForm({ task, onUpdate, onDelete, onClose }) {
           className="task-title-input"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          onBlur={() => handleFieldChange('title', title)}
           placeholder="Task title..."
           autoFocus
         />
@@ -561,7 +592,6 @@ function TaskEditForm({ task, onUpdate, onDelete, onClose }) {
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            onBlur={() => handleFieldChange('description', description)}
             placeholder="Add a description..."
             rows={4}
           />
@@ -574,7 +604,6 @@ function TaskEditForm({ task, onUpdate, onDelete, onClose }) {
             type="text"
             value={tags}
             onChange={(e) => setTags(e.target.value)}
-            onBlur={() => handleFieldChange('tags', tags)}
             placeholder="frontend, bug, urgent..."
           />
         </div>
