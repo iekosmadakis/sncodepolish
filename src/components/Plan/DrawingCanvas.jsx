@@ -414,9 +414,9 @@ const DrawingCanvas = forwardRef(function DrawingCanvas({ onToast }, ref) {
     
     const pos = getMousePos(e);
     
-    // Handle text tool - show input at click position
+    // Handle text tool
     if (tool === TOOLS.TEXT) {
-      // Submit any existing text before creating new input
+      // Submit existing text before creating new input
       const existingValue = textInputRef.current?.value;
       if (textInput.show && existingValue?.trim()) {
         const newElement = {
@@ -589,10 +589,9 @@ const DrawingCanvas = forwardRef(function DrawingCanvas({ onToast }, ref) {
 
   /**
    * Handles text input submission
-   * Uses ref to get current value directly from DOM to avoid stale closure issues
    */
   const handleTextSubmit = useCallback(() => {
-    // Get current value directly from the input element (avoids stale closure)
+    // Read from DOM directly to avoid stale closure issues
     const currentValue = textInputRef.current?.value || textInput.value;
     
     if (!currentValue.trim() || !selectedDrawing) {

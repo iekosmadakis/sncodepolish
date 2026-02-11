@@ -2863,20 +2863,45 @@ body {
 
 .tiptap-wrapper .ProseMirror ul[data-type="taskList"] li {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
 }
 
 .tiptap-wrapper .ProseMirror ul[data-type="taskList"] li > label {
+  display: flex;
+  align-items: center;
   flex-shrink: 0;
-  margin-top: 3px;
+}
+
+.tiptap-wrapper .ProseMirror ul[data-type="taskList"] li > div p {
+  margin: 0;
 }
 
 .tiptap-wrapper .ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"] {
+  -webkit-appearance: none;
+  appearance: none;
   width: 16px;
   height: 16px;
+  margin: 0;
+  border: 2px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--bg-tertiary);
   cursor: pointer;
-  accent-color: var(--accent-primary);
+  transition: all 0.2s ease;
+  vertical-align: middle;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 10px 10px;
+}
+
+.tiptap-wrapper .ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"]:hover {
+  border-color: var(--accent-primary);
+}
+
+.tiptap-wrapper .ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"]:checked {
+  background-color: var(--accent-primary);
+  border-color: var(--accent-primary);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M1.5 5.5L4 8L8.5 2' fill='none' stroke='%230d0d14' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 
 .tiptap-wrapper .ProseMirror ul[data-type="taskList"] li > div {
@@ -3402,10 +3427,11 @@ body {
 }
 
 /* =============================================================================
-   DELETE CONFIRMATION MODAL
+   MODAL SHARED STYLES
    ============================================================================= */
 
-.delete-confirm-overlay {
+.delete-confirm-overlay,
+.link-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -3419,7 +3445,8 @@ body {
   animation: fadeIn 0.2s ease;
 }
 
-.delete-confirm-modal {
+.delete-confirm-modal,
+.link-modal {
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: 12px;
@@ -3442,70 +3469,135 @@ body {
   }
 }
 
-.delete-confirm-icon {
+.delete-confirm-icon,
+.link-modal-icon {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 56px;
   height: 56px;
   margin: 0 auto 16px;
-  background: rgba(239, 68, 68, 0.1);
   border-radius: 50%;
+}
+
+.delete-confirm-icon {
+  background: rgba(239, 68, 68, 0.1);
   color: var(--error);
 }
 
-.delete-confirm-modal h3 {
+.link-modal-icon {
+  background: rgba(0, 212, 170, 0.1);
+  color: var(--accent-primary);
+}
+
+.delete-confirm-modal h3,
+.link-modal h3 {
   font-size: 18px;
   font-weight: 600;
   color: var(--text-primary);
   margin: 0 0 8px;
 }
 
-.delete-confirm-modal p {
+.delete-confirm-modal p,
+.link-modal p {
   font-size: 14px;
   color: var(--text-secondary);
   margin: 0 0 24px;
   line-height: 1.5;
 }
 
-.delete-confirm-actions {
+.delete-confirm-actions,
+.link-modal-actions {
   display: flex;
   gap: 12px;
   justify-content: center;
 }
 
-.delete-confirm-actions .cancel-btn {
+/* Shared modal button base (prevents parent style bleed) */
+.delete-confirm-actions button,
+.link-modal-actions button {
   padding: 10px 20px;
+  width: auto;
+  height: auto;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+/* Cancel button (neutral) */
+.delete-confirm-actions .cancel-btn,
+.link-modal-actions .cancel-btn {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.delete-confirm-actions .cancel-btn:hover,
+.link-modal-actions .cancel-btn:hover {
+  background: var(--bg-primary);
+  border-color: var(--text-muted);
+}
+
+/* Destructive button (red) */
+.delete-confirm-actions .confirm-delete-btn,
+.link-modal-actions .remove-link-btn {
+  background: var(--error);
+  border: none;
+  color: white;
+}
+
+.delete-confirm-actions .confirm-delete-btn:hover,
+.link-modal-actions .remove-link-btn:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+}
+
+/* -------------------------------------------------------------------------
+   Link Modal
+   ------------------------------------------------------------------------- */
+
+.link-modal-input {
+  width: 100%;
+  padding: 10px 14px;
   background: var(--bg-tertiary);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   color: var(--text-primary);
   font-size: 14px;
-  font-weight: 500;
   font-family: var(--font-sans);
-  cursor: pointer;
-  transition: all 0.2s ease;
+  outline: none;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+  margin-bottom: 24px;
 }
 
-.delete-confirm-actions .cancel-btn:hover {
-  background: var(--bg-primary);
-  border-color: var(--text-muted);
+.link-modal-input:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(0, 212, 170, 0.15);
 }
 
-.delete-confirm-actions .confirm-delete-btn {
-  padding: 10px 20px;
-  background: var(--error);
+.link-modal-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Primary action button (accent) */
+.link-modal-actions .confirm-link-btn {
+  background: var(--accent-primary);
   border: none;
-  border-radius: 8px;
-  color: white;
-  font-size: 14px;
-  font-weight: 500;
-  font-family: var(--font-sans);
-  cursor: pointer;
-  transition: all 0.2s ease;
+  color: var(--bg-primary);
 }
 
-.delete-confirm-actions .confirm-delete-btn:hover {
-  background: #dc2626;
+.link-modal-actions .confirm-link-btn:hover {
+  background: #00e6b8;
   transform: translateY(-1px);
+}
+
+.link-modal-actions .confirm-link-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
 }

@@ -385,7 +385,7 @@ const TaskBoard = forwardRef(function TaskBoard({ onToast }, ref) {
               <Icon name="warning" size={32} />
             </div>
             <h3>Delete Task</h3>
-            <p>Are you sure you want to delete &quot;{deleteConfirm.title}&quot;? This action cannot be undone.</p>
+            <p>Are you sure you want to delete "{deleteConfirm.title}"? This action cannot be undone.</p>
             <div className="delete-confirm-actions">
               <button 
                 className="cancel-btn"

@@ -324,9 +324,9 @@ function App() {
   const [diffHighlightEnabled, setDiffHighlightEnabled] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const settingsDropdownRef = useRef(null);
-  const toastTimeoutRef = useRef(null);
 
   // Toast notification
+  const toastTimeoutRef = useRef(null);
   const showToast = useCallback((message, type = 'success') => {
     // Clear any existing timeout to prevent premature hiding
     if (toastTimeoutRef.current) {

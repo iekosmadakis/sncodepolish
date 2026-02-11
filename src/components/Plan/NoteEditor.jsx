@@ -39,6 +39,8 @@ const lowlight = createLowlight(common);
 function TipTapEditor({ note, onUpdate, isSaving }) {
   // Force re-render when editor state changes (for toolbar active states)
   const [, setForceUpdate] = useState(0);
+  const [linkModal, setLinkModal] = useState({ show: false, url: '', isEdit: false });
+  const linkInputRef = useRef(null);
 
   const editor = useEditor({
     extensions: [
@@ -99,96 +101,163 @@ function TipTapEditor({ note, onUpdate, isSaving }) {
   }
 
   /**
-   * Adds a link to selected text
+   * Opens the link modal (for inserting or editing a link)
    */
-  const addLink = () => {
-    const url = window.prompt('Enter URL:');
-    if (url) {
-      editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
-    }
+  const openLinkModal = () => {
+    const existingUrl = editor.getAttributes('link').href || '';
+    setLinkModal({ show: true, url: existingUrl, isEdit: !!existingUrl });
+    setTimeout(() => linkInputRef.current?.focus(), 50);
+  };
+
+  /**
+   * Confirms the link from the modal input
+   */
+  const handleLinkSubmit = () => {
+    const url = linkModal.url.trim();
+    if (!url) return;
+    editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+    setLinkModal({ show: false, url: '', isEdit: false });
+  };
+
+  /**
+   * Removes an existing link
+   */
+  const handleLinkRemove = () => {
+    editor.chain().focus().extendMarkRange('link').unsetLink().run();
+    setLinkModal({ show: false, url: '', isEdit: false });
   };
 
   return (
-    <div className="tiptap-wrapper">
-      {/* Editor Toolbar */}
-      <div className="note-editor-toolbar">
-        <div className="toolbar-group">
-          <button
-            onClick={() => editor.chain().focus().toggleBold().run()}
-            className={editor.isActive('bold') ? 'active' : ''}
-            title="Bold"
-          >
-            <strong>B</strong>
-          </button>
-          <button
-            onClick={() => editor.chain().focus().toggleItalic().run()}
-            className={editor.isActive('italic') ? 'active' : ''}
-            title="Italic"
-          >
-            <em>I</em>
-          </button>
-          <button
-            onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-            className={editor.isActive('heading', { level: 2 }) ? 'active' : ''}
-            title="Heading"
-          >
-            H
-          </button>
+    <>
+      <div className="tiptap-wrapper">
+        {/* Editor Toolbar */}
+        <div className="note-editor-toolbar">
+          <div className="toolbar-group">
+            <button
+              onClick={() => editor.chain().focus().toggleBold().run()}
+              className={editor.isActive('bold') ? 'active' : ''}
+              title="Bold"
+            >
+              <strong>B</strong>
+            </button>
+            <button
+              onClick={() => editor.chain().focus().toggleItalic().run()}
+              className={editor.isActive('italic') ? 'active' : ''}
+              title="Italic"
+            >
+              <em>I</em>
+            </button>
+            <button
+              onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+              className={editor.isActive('heading', { level: 2 }) ? 'active' : ''}
+              title="Heading"
+            >
+              H
+            </button>
+          </div>
+          <div className="toolbar-group">
+            <button
+              onClick={() => editor.chain().focus().toggleBulletList().run()}
+              className={editor.isActive('bulletList') ? 'active' : ''}
+              title="Bullet List"
+            >
+              <Icon name="list" size={14} />
+            </button>
+            <button
+              onClick={() => editor.chain().focus().toggleTaskList().run()}
+              className={editor.isActive('taskList') ? 'active' : ''}
+              title="Checklist"
+            >
+              <Icon name="check" size={14} />
+            </button>
+            <button
+              onClick={() => editor.chain().focus().toggleBlockquote().run()}
+              className={editor.isActive('blockquote') ? 'active' : ''}
+              title="Quote"
+            >
+              <Icon name="quote" size={14} />
+            </button>
+          </div>
+          <div className="toolbar-group">
+            <button
+              onClick={() => editor.chain().focus().toggleCode().run()}
+              className={editor.isActive('code') ? 'active' : ''}
+              title="Inline Code"
+            >
+              <Icon name="code" size={14} />
+            </button>
+            <button
+              onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+              className={editor.isActive('codeBlock') ? 'active' : ''}
+              title="Code Block"
+            >
+              <Icon name="terminal" size={14} />
+            </button>
+            <button
+              onClick={openLinkModal}
+              className={editor.isActive('link') ? 'active' : ''}
+              title="Link"
+            >
+              <Icon name="link" size={14} />
+            </button>
+          </div>
+          <div className="toolbar-right">
+            {isSaving && <span className="save-indicator">Saving...</span>}
+          </div>
         </div>
-        <div className="toolbar-group">
-          <button
-            onClick={() => editor.chain().focus().toggleBulletList().run()}
-            className={editor.isActive('bulletList') ? 'active' : ''}
-            title="Bullet List"
-          >
-            <Icon name="list" size={14} />
-          </button>
-          <button
-            onClick={() => editor.chain().focus().toggleTaskList().run()}
-            className={editor.isActive('taskList') ? 'active' : ''}
-            title="Checklist"
-          >
-            <Icon name="check" size={14} />
-          </button>
-          <button
-            onClick={() => editor.chain().focus().toggleBlockquote().run()}
-            className={editor.isActive('blockquote') ? 'active' : ''}
-            title="Quote"
-          >
-            <Icon name="quote" size={14} />
-          </button>
-        </div>
-        <div className="toolbar-group">
-          <button
-            onClick={() => editor.chain().focus().toggleCode().run()}
-            className={editor.isActive('code') ? 'active' : ''}
-            title="Inline Code"
-          >
-            <Icon name="code" size={14} />
-          </button>
-          <button
-            onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-            className={editor.isActive('codeBlock') ? 'active' : ''}
-            title="Code Block"
-          >
-            <Icon name="terminal" size={14} />
-          </button>
-          <button
-            onClick={addLink}
-            className={editor.isActive('link') ? 'active' : ''}
-            title="Link"
-          >
-            <Icon name="link" size={14} />
-          </button>
-        </div>
-        <div className="toolbar-right">
-          {isSaving && <span className="save-indicator">Saving...</span>}
-        </div>
+
+        {/* Editor Content */}
+        <EditorContent editor={editor} />
       </div>
 
-      {/* Editor Content */}
-      <EditorContent editor={editor} />
-    </div>
+      {/* Link Modal - rendered outside tiptap-wrapper to avoid toolbar style bleed */}
+      {linkModal.show && (
+        <div className="link-modal-overlay" onClick={() => setLinkModal({ show: false, url: '', isEdit: false })}>
+          <div className="link-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="link-modal-icon">
+              <Icon name="link" size={32} />
+            </div>
+            <h3>{linkModal.isEdit ? 'Edit Link' : 'Insert Link'}</h3>
+            <p>{linkModal.isEdit ? 'Update the URL or remove the link.' : 'Enter the URL for the selected text.'}</p>
+            <input
+              ref={linkInputRef}
+              type="url"
+              className="link-modal-input"
+              value={linkModal.url}
+              onChange={(e) => setLinkModal(prev => ({ ...prev, url: e.target.value }))}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleLinkSubmit();
+                if (e.key === 'Escape') setLinkModal({ show: false, url: '', isEdit: false });
+              }}
+              placeholder="https://..."
+            />
+            <div className="link-modal-actions">
+              <button 
+                className="cancel-btn"
+                onClick={() => setLinkModal({ show: false, url: '', isEdit: false })}
+              >
+                Cancel
+              </button>
+              {linkModal.isEdit && (
+                <button 
+                  className="remove-link-btn"
+                  onClick={handleLinkRemove}
+                >
+                  Remove Link
+                </button>
+              )}
+              <button 
+                className="confirm-link-btn"
+                onClick={handleLinkSubmit}
+                disabled={!linkModal.url.trim()}
+              >
+                {linkModal.isEdit ? 'Update' : 'Insert'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
