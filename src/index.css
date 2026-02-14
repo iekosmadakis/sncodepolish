@@ -77,8 +77,7 @@ body {
 /* Icons in inline contexts need margin for spacing */
 .fix-icon .icon-svg,
 .fixes-dropdown-title .icon-svg,
-.settings-dropdown-title .icon-svg,
-.mode-info-header .icon-svg {
+.settings-dropdown-title .icon-svg {
   margin-right: 5px;
 }
 
@@ -459,10 +458,6 @@ body {
   position: sticky;
   top: 0;
   z-index: 1;
-}
-
-.mode-info-header .icon-svg {
-  margin-right: 0;
 }
 
 .mode-info-content {
