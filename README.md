@@ -1,10 +1,10 @@
-# GlideAware Studio
+# GlideAware Studio™
 
 A client-side web application for ServiceNow development. Features code formatting, task management, note-taking, and visual planning - all running offline in your browser. Your data never leaves your machine.
 
 ## App Modes
 
-GlideAware Studio provides two primary modes accessible via the top-level toggle:
+GlideAware Studio™ provides two primary modes accessible via the top-level toggle:
 
 | Mode | Description |
 |------|-------------|
@@ -102,7 +102,7 @@ Formats code using Prettier with ServiceNow-friendly settings (JavaScript) or cl
 ### 🔧 ServiceNow Auto-Fixes
 
 #### Intelligent Typo Detection (Fuzzy Matching)
-GlideAware Studio uses a **two-pass approach** for typo detection:
+GlideAware Studio™ uses a **two-pass approach** for typo detection:
 
 1. **Fast regex patterns** for common known typos (instant)
 2. **Fuzzy matching** using Damerau-Levenshtein edit distance for any remaining typos
