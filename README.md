@@ -31,7 +31,7 @@ A full-featured Kanban board for managing development tasks:
 | **Tags** | Organize tasks with custom tags |
 | **Auto-save** | Every change persists instantly to IndexedDB |
 
-### Notes (Docs)
+### Notes (Write)
 
 WYSIWYG rich text note-taking with formatting:
 
@@ -373,8 +373,8 @@ After building, the `dist/` folder contains static files that can be deployed to
 6. Use the collapsible **Backlog** sidebar for items not yet in progress
 7. Click **Export** to save all Plan data as JSON
 
-### Plan Mode - Notes (Docs)
-1. Click **Plan** → **Notes** → **Docs**
+### Plan Mode - Notes (Write)
+1. Click **Plan** → **Notes** → **Write**
 2. Create a new note using the **+** button
 3. Use the WYSIWYG toolbar for formatting (bold, italic, code, checklists, etc.)
 4. See formatted text immediately as you type
@@ -455,7 +455,7 @@ src/
 │   ├── Icon.jsx               # SVG icon library component
 │   └── Plan/
 │       ├── TaskBoard.jsx      # Kanban board for task management
-│       ├── NoteEditor.jsx     # Rich text note editor (Docs)
+│       ├── NoteEditor.jsx     # Rich text note editor (Write)
 │       └── DrawingCanvas.jsx  # Canvas-based drawing tool (Sketch)
 └── utils/
     ├── codePolish.js          # Main orchestrator (JS + JSON)

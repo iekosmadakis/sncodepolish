@@ -1148,11 +1148,11 @@ function App() {
     showToast(`Switched to ${newSubMode === 'tasks' ? 'Tasks' : 'Notes'}`, 'success');
   }, [planSubMode, showToast]);
 
-  // Handle notes sub-mode toggle (Docs/Sketch)
+  // Handle notes sub-mode toggle (Write/Sketch)
   const handleNotesSubModeToggle = useCallback((newSubMode) => {
     if (newSubMode === notesSubMode) return;
     setNotesSubMode(newSubMode);
-    showToast(`Switched to ${newSubMode === 'docs' ? 'Docs' : 'Sketch'}`, 'success');
+    showToast(`Switched to ${newSubMode === 'docs' ? 'Write' : 'Sketch'}`, 'success');
   }, [notesSubMode, showToast]);
 
   // Configure Monaco editor
@@ -1389,7 +1389,7 @@ function App() {
                     onClick={() => handleNotesSubModeToggle('docs')}
                     title="Rich Text Notes"
                   >
-                    <Icon name="document" size={14} /> Docs
+                    <Icon name="document" size={14} /> Write
                   </button>
                   <button
                     className={`sub-mode-btn ${notesSubMode === 'sketch' ? 'active' : ''}`}
@@ -2528,7 +2528,7 @@ function App() {
             {appMode === 'plan' 
               ? (planSubMode === 'tasks' 
                   ? 'Task Management & Kanban'
-                  : (notesSubMode === 'docs' ? 'Notes & Documentation' : 'Sketches & Diagrams'))
+                  : (notesSubMode === 'docs' ? 'Write & Notes' : 'Sketches & Diagrams'))
               : mode === 'json' 
                 ? (jsonSubMode === 'diff' ? 'JSON Comparison & Analysis' : 'JSON Formatter & Validator')
                 : (jsSubMode === 'visualize' 
@@ -2551,7 +2551,7 @@ function App() {
                     ? (planSubMode === 'tasks' 
                         ? <><Icon name="clipboard" size={14} /> Task Management</>
                         : (notesSubMode === 'docs' 
-                            ? <><Icon name="document" size={14} /> Notes & Docs</>
+                            ? <><Icon name="document" size={14} /> Write</>
                             : <><Icon name="brush" size={14} /> Sketches</>))
                     : mode === 'json' 
                       ? (jsonSubMode === 'diff' ? <><Icon name="compare" size={14} /> JSON Diff</> : <><Icon name="json" size={14} /> JSON Format</>)
@@ -2581,7 +2581,7 @@ function App() {
                       </div>
                     </>
                   )}
-                  {/* Plan Mode - Notes (Docs) */}
+                  {/* Plan Mode - Notes (Write) */}
                   {appMode === 'plan' && planSubMode === 'notes' && notesSubMode === 'docs' && (
                     <>
                       <div className="mode-info-section">
