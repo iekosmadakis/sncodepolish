@@ -1334,7 +1334,7 @@ function App() {
                 <path d="M38 12 L26 52" stroke="currentColor" strokeWidth="5" strokeLinecap="round" fill="none" opacity="0.7"/>
               </svg>
             </div>
-            <span className="logo-text">GlideAware Studio™</span>
+            <span className="logo-text">GlideAware Studio<sup className="logo-tm">™</sup></span>
           </div>
           
           {/* Top-level App Mode Toggle */}

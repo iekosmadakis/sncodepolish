@@ -159,6 +159,11 @@ body {
   background-clip: text;
 }
 
+.logo-tm {
+  font-size: 0.6em;
+  vertical-align: super;
+}
+
 
 /* App Mode Toggle (Plan / Development) - Main app switch */
 .app-mode-toggle {
